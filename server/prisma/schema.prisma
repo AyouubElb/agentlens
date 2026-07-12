@@ -1,0 +1,12 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+  runtime      = "nodejs"
+}
+
+// Models land at the DB slice (User, Agent, Rubric, Criterion, AgentVersion, Run, Score, ApiKey).

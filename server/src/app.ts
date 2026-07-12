@@ -1,0 +1,40 @@
+import Fastify, { type FastifyInstance } from "fastify";
+import cookie from "@fastify/cookie";
+import cors from "@fastify/cors";
+import helmet from "@fastify/helmet";
+import jwt from "@fastify/jwt";
+import rateLimit from "@fastify/rate-limit";
+import sensible from "@fastify/sensible";
+import swagger from "@fastify/swagger";
+import swaggerUi from "@fastify/swagger-ui";
+import {
+  serializerCompiler,
+  validatorCompiler,
+  type ZodTypeProvider,
+} from "fastify-type-provider-zod";
+
+import { env } from "./config/env.js";
+
+export function buildApp(): FastifyInstance {
+  const app = Fastify({
+    logger: { level: env.NODE_ENV === "test" ? "silent" : "info" },
+  });
+
+  app.setValidatorCompiler(validatorCompiler);
+  app.setSerializerCompiler(serializerCompiler);
+
+  app.register(helmet);
+  app.register(cors, { origin: env.CORS_ORIGIN, credentials: true });
+  app.register(rateLimit, { max: 100, timeWindow: "1 minute" });
+  app.register(cookie);
+  app.register(jwt, { secret: env.JWT_SECRET, cookie: { cookieName: "token", signed: false } });
+  app.register(sensible);
+  app.register(swagger, {
+    openapi: { info: { title: "AgentLens API", version: "0.1.0" } },
+  });
+  app.register(swaggerUi, { routePrefix: "/docs" });
+
+  app.withTypeProvider<ZodTypeProvider>().get("/health", () => ({ status: "ok" }));
+
+  return app;
+}
