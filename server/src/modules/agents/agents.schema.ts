@@ -1,0 +1,61 @@
+import { z } from "zod";
+
+const nameSchema = z.string().min(3).max(100);
+
+const criterionInputSchema = z.object({
+  name: z.string().min(3),
+  description: z.string(),
+  weight: z.number().positive(),
+});
+
+export const createAgentSchema = z.object({
+  name: nameSchema,
+  rubric: z.object({
+    name: z.string().min(3),
+    criteria: z.array(criterionInputSchema).min(1),
+  }),
+});
+
+export const updateAgentSchema = z.object({ name: nameSchema });
+
+export const updateRubricSchema = z.object({ name: z.string().min(3) });
+
+export const createCriterionSchema = criterionInputSchema;
+
+export const updateCriterionSchema = criterionInputSchema.partial();
+
+export const idParam = z.object({ id: z.string() });
+export const criterionParam = z.object({ id: z.string(), cid: z.string() });
+
+export const agentSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  createdAt: z.date(),
+});
+
+export const criterionSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  weight: z.number(),
+});
+
+export const rubricSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  criteria: z.array(criterionSchema),
+});
+
+export const agentDetailSchema = agentSchema.extend({ rubric: rubricSchema });
+
+export const okSchema = z.object({ ok: z.boolean() });
+
+export type CreateAgentInput = z.infer<typeof createAgentSchema>;
+export type UpdateAgentInput = z.infer<typeof updateAgentSchema>;
+export type UpdateRubricInput = z.infer<typeof updateRubricSchema>;
+export type CreateCriterionInput = z.infer<typeof createCriterionSchema>;
+export type UpdateCriterionInput = z.infer<typeof updateCriterionSchema>;
+export type PublicAgent = z.infer<typeof agentSchema>;
+export type PublicCriterion = z.infer<typeof criterionSchema>;
+export type PublicRubric = z.infer<typeof rubricSchema>;
+export type PublicAgentDetail = z.infer<typeof agentDetailSchema>;
