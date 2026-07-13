@@ -15,5 +15,34 @@ model User {
   username     String
   passwordHash String
   createdAt    DateTime @default(now())
+  agents       Agent[]
+}
+
+model Agent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  createdAt DateTime @default(now())
+  rubric    Rubric?
+
+  @@index([userId])
+}
+
+model Rubric {
+  id       String      @id @default(cuid())
+  agentId  String      @unique
+  agent    Agent       @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  name     String
+  criteria Criterion[]
+}
+
+model Criterion {
+  id          String @id @default(cuid())
+  rubricId    String
+  rubric      Rubric @relation(fields: [rubricId], references: [id], onDelete: Cascade)
+  name        String
+  description String
+  weight      Float
 }
 

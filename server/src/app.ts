@@ -17,6 +17,7 @@ import { env } from "./config/env.js";
 import "./shared/auth/jwt.js";
 import { registerErrorHandler } from "./shared/errors/handler.js";
 import { authRoutes } from "./modules/auth/auth.routes.js";
+import { agentRoutes } from "./modules/agents/agents.routes.js";
 
 export function buildApp(): FastifyInstance {
   const app = Fastify({
@@ -41,6 +42,7 @@ export function buildApp(): FastifyInstance {
   app.withTypeProvider<ZodTypeProvider>().get("/health", () => ({ status: "ok" }));
 
   app.register(async (instance) => authRoutes(instance), { prefix: "/api/v1/auth" });
+  app.register(async (instance) => agentRoutes(instance), { prefix: "/api/v1/agents" });
 
   return app;
 }

@@ -39,8 +39,9 @@ User ──1:N──▶ Agent ──1:N──▶ AgentVersion ──1:N──▶
 | created_at | |
 
 **Rubric** — the fixed measuring stick, **at the agent level** (not per version), so a v1→v2
-score change reflects the agent changing, not the goalposts moving. Cloned from a template
-at agent creation (copied, never referenced — editing a template must not mutate live rubrics).
+score change reflects the agent changing, not the goalposts moving. **Stage one:** the client
+supplies the rubric name + criteria when creating the agent (`POST /agents`), created in the same
+transaction. (A rubric-template library — pick/clone a predefined rubric — is deferred.)
 | Field | Notes |
 |-------|-------|
 | id | PK |
@@ -103,7 +104,7 @@ The unit that gets scored. Belongs to exactly one Version.
 ### Locked entity decisions
 
 - **Rubric is agent-level, fixed across versions** — keeps version comparison valid.
-- **Rubric cloned from a template** at creation (copy, not reference).
+- **Rubric criteria are client-supplied at agent creation** (stage one); a template library is deferred.
 - **Version is client-declared, auto-created on first sight** (the caller decides when v1→v2);
   its config is client-supplied and opaque to AgentLens.
 - **Score = one row per (Run, Criterion)**; the single **overall** is denormalized onto Run
@@ -141,7 +142,7 @@ per-surface. All routes share the `/api/v1` base path; the tables below list pat
 | Method + path | Purpose |
 |---|---|
 | GET /agents | list the user's agents |
-| POST /agents | create agent (auto-clones a rubric from a template) |
+| POST /agents | create agent (body carries the rubric name + criteria; created in one tx) |
 | GET /agents/:id | agent detail (hub: versions, rubric, run history) |
 | PATCH /agents/:id | partial update (e.g. rename) |
 | DELETE /agents/:id | delete agent (cascades rubric, versions, runs, keys) |
@@ -195,8 +196,9 @@ ingest** (Option C), so there is **no dashboard "create version"**.
 
 - **Nest children under their parent** — rubric, criteria, versions, runs, keys all live under
   `/agents/:id/...`; they can't exist without the agent.
-- **Locked decisions remove endpoints** — Option C removes "create version"; template-cloning
-  removes "create/delete rubric." Fewer endpoints because the entity relationships do the work.
+- **Locked decisions remove endpoints** — Option C removes "create version"; the rubric is
+  created with the agent (and deleted on cascade), so there's no standalone "create/delete rubric."
+  Fewer endpoints because the entity relationships do the work.
 - **Method choice** — `PATCH` for partial updates (not `PUT`), `POST` for create/actions.
 
 ### Open (finalize when specifying payloads)
