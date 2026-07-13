@@ -2,8 +2,9 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    // Co-located *.test.ts beside the code they test (see docs/TESTING.md).
+    // Unit tests: co-located *.test.ts, excluding *.int.test.ts (which need Docker/Postgres).
     include: ["src/**/*.test.ts"],
+    exclude: ["src/**/*.int.test.ts", "node_modules/**"],
     environment: "node",
     // Dummy values so env validation passes without a real .env or DB.
     env: {

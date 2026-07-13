@@ -9,4 +9,11 @@ generator client {
   runtime      = "nodejs"
 }
 
-// Models land at the DB slice (User, Agent, Rubric, Criterion, AgentVersion, Run, Score, ApiKey).
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  username     String
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+

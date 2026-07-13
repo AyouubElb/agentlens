@@ -26,7 +26,8 @@ User ──1:N──▶ Agent ──1:N──▶ AgentVersion ──1:N──▶
 |-------|-------|
 | id | PK |
 | email | unique |
-| password_hash | bcrypt |
+| username | display name (required) |
+| password_hash | argon2id |
 | created_at | |
 
 **Agent** — the thing being evaluated. Owns one Rubric and many Versions; issues API keys.
@@ -120,20 +121,21 @@ The unit that gets scored. Belongs to exactly one Version.
 ## 2. API Design
 
 Two surfaces, different auth, namespaced separately so middleware / rate limits / CORS apply
-per-surface:
+per-surface. All routes share the `/api/v1` base path; the tables below list paths relative to it
+(e.g. `/register` → `POST /api/v1/auth/register`, ingest → `POST /api/v1/runs`).
 
 - **Dashboard API** — humans, **session-cookie (JWT)** auth. All CRUD + scoring + comparison.
-- **Ingest API** — machines, **API-key** auth, under `/v1/...`. Just run submission.
+- **Ingest API** — machines, **API-key** auth. Just run submission.
 
 ### Dashboard API (session cookie)
 
-**Auth**
+**Auth** (under `/auth`)
 | Method + path | Purpose |
 |---|---|
-| POST /register | create account (optional, per register logic) |
-| POST /login | start session (sets HttpOnly cookie) |
-| POST /logout | clear the cookie server-side (needed with HttpOnly) |
-| GET /me | current user |
+| POST /auth/register | create account (no auto-login; 409 if email exists) |
+| POST /auth/login | start session (sets HttpOnly cookie, 2h JWT) |
+| POST /auth/logout | clear the cookie server-side (needed with HttpOnly) |
+| GET /auth/me | current user (auth guard) |
 
 **Agents**
 | Method + path | Purpose |

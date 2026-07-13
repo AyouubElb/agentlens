@@ -37,3 +37,10 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      # GitHub runners ship Docker, so Testcontainers spins up Postgres here.
+      - name: Integration tests
+        run: npm run test:int

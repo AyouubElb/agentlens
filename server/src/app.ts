@@ -14,6 +14,9 @@ import {
 } from "fastify-type-provider-zod";
 
 import { env } from "./config/env.js";
+import "./shared/auth/jwt.js";
+import { registerErrorHandler } from "./shared/errors/handler.js";
+import { authRoutes } from "./modules/auth/auth.routes.js";
 
 export function buildApp(): FastifyInstance {
   const app = Fastify({
@@ -22,6 +25,7 @@ export function buildApp(): FastifyInstance {
 
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
+  registerErrorHandler(app);
 
   app.register(helmet);
   app.register(cors, { origin: env.CORS_ORIGIN, credentials: true });
@@ -35,6 +39,8 @@ export function buildApp(): FastifyInstance {
   app.register(swaggerUi, { routePrefix: "/docs" });
 
   app.withTypeProvider<ZodTypeProvider>().get("/health", () => ({ status: "ok" }));
+
+  app.register(async (instance) => authRoutes(instance), { prefix: "/api/v1/auth" });
 
   return app;
 }
