@@ -34,13 +34,23 @@ Happy path **and** the failure paths where bugs hide:
 | Coverage | **v8** (`vitest --coverage`) | future CI gate |
 | Fixtures | recorded JSON in `src/test/fixtures/` | for the future judge; deterministic |
 
-## Open decision — test database strategy
+## Test database — Testcontainers
 
-Prisma + Postgres does not swap to in-memory SQLite as cleanly as the previous stack did. Options,
-to decide at the first integration-test slice:
+Integration tests run against a **real, disposable Postgres** started by
+[Testcontainers](https://testcontainers.com) (needs Docker). Most faithful to production — real
+constraints, real SQL — with no shared state to clean up between runs.
 
-- **Testcontainers** — a real disposable Postgres per run (most faithful, needs Docker).
-- **Dedicated test schema/database** — point tests at a separate Postgres schema, reset between tests.
-- **In-memory Postgres substitute** (e.g. pglite) — fastest, with some fidelity caveats.
+**Unit vs integration are split by filename:**
 
-Unit tests (pure logic — e.g. the score rollup math) need none of this and come first.
+- `*.test.ts` — unit, no DB. `npm test` runs these (fast, no Docker).
+- `*.int.test.ts` — integration, real Postgres. `npm run test:int` runs these.
+- `npm run test:all` runs both.
+
+**Harness** (`src/test/db.ts`): `startTestDb()` boots a `postgres:16-alpine` container, points
+`DATABASE_URL` at it, applies migrations (`prisma migrate deploy`), and returns the URL;
+`stopTestDb()` tears it down. A DB-backed test file calls these in `beforeAll`/`afterAll` and
+**dynamically imports** the app + Prisma client *after* the URL is set (both bind env at load).
+Per-test isolation: `prisma.user.deleteMany()` (truncate) in `afterEach`.
+
+**CI:** GitHub Actions runners ship Docker, so both `npm test` and `npm run test:int` run in the
+workflow with no extra service config.

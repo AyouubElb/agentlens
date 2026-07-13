@@ -14,3 +14,9 @@ export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
 if (env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
 }
+
+// The adapter doesn't own the pool; close it explicitly or sockets outlive teardown (57P01).
+export async function closeDb(): Promise<void> {
+  await prisma.$disconnect();
+  await pool.end();
+}
