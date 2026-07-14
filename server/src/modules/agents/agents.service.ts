@@ -1,10 +1,14 @@
-import type { Agent, Criterion } from "../../generated/prisma/client.js";
+import type { Agent, ApiKey, Criterion } from "../../generated/prisma/client.js";
 import { NotFoundError } from "../../shared/errors/errors.js";
+import { generateApiKey } from "../../shared/auth/apiKey.js";
 import type {
   CreateAgentInput,
   CreateCriterionInput,
+  CreateKeyInput,
+  CreatedApiKey,
   PublicAgent,
   PublicAgentDetail,
+  PublicApiKey,
   PublicCriterion,
   PublicRubric,
   UpdateAgentInput,
@@ -28,6 +32,18 @@ function toRubric(r: RubricWithCriteria): PublicRubric {
 
 function toAgentDetail(a: AgentWithRubric): PublicAgentDetail {
   return { ...toAgent(a), rubric: toRubric(a.rubric) };
+}
+
+// Omits keyHash — a public key shape never carries the secret material.
+function toApiKey(k: ApiKey): PublicApiKey {
+  return {
+    id: k.id,
+    name: k.name,
+    prefix: k.prefix,
+    createdAt: k.createdAt,
+    revokedAt: k.revokedAt,
+    status: k.revokedAt ? "revoked" : "active",
+  };
 }
 
 export async function list(userId: string): Promise<PublicAgent[]> {
@@ -98,5 +114,27 @@ export async function editCriterion(
 export async function removeCriterion(cid: string, agentId: string, userId: string): Promise<void> {
   if (!(await repo.deleteCriterion(cid, agentId, userId))) {
     throw new NotFoundError("Criterion not found");
+  }
+}
+
+export async function issueKey(
+  agentId: string,
+  userId: string,
+  input: CreateKeyInput,
+): Promise<CreatedApiKey> {
+  const { plaintext, prefix, keyHash } = generateApiKey();
+  const key = await repo.createKey(agentId, userId, { name: input.name, prefix, keyHash });
+  if (!key) throw new NotFoundError("Agent not found");
+  return { ...toApiKey(key), key: plaintext };
+}
+
+export async function listKeys(agentId: string, userId: string): Promise<PublicApiKey[]> {
+  if (!(await repo.findAgent(agentId, userId))) throw new NotFoundError("Agent not found");
+  return (await repo.listKeys(agentId, userId)).map(toApiKey);
+}
+
+export async function revokeKey(kid: string, agentId: string, userId: string): Promise<void> {
+  if (!(await repo.revokeKey(kid, agentId, userId))) {
+    throw new NotFoundError("API key not found");
   }
 }

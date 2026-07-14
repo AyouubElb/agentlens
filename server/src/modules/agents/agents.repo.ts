@@ -1,4 +1,4 @@
-import type { Agent, Criterion, Rubric } from "../../generated/prisma/client.js";
+import type { Agent, ApiKey, Criterion, Rubric } from "../../generated/prisma/client.js";
 import { prisma } from "../../db/client.js";
 import type {
   CreateAgentInput,
@@ -111,6 +111,31 @@ export async function deleteCriterion(
 ): Promise<boolean> {
   const { count } = await prisma.criterion.deleteMany({
     where: { id: cid, rubric: { agentId, agent: { userId } } },
+  });
+  return count > 0;
+}
+
+export async function createKey(
+  agentId: string,
+  userId: string,
+  data: { name: string; prefix: string; keyHash: string },
+): Promise<ApiKey | null> {
+  const agent = await prisma.agent.findFirst({ where: { id: agentId, userId }, select: { id: true } });
+  if (!agent) return null;
+  return prisma.apiKey.create({ data: { ...data, agentId } });
+}
+
+export function listKeys(agentId: string, userId: string): Promise<ApiKey[]> {
+  return prisma.apiKey.findMany({
+    where: { agentId, agent: { userId } },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export async function revokeKey(kid: string, agentId: string, userId: string): Promise<boolean> {
+  const { count } = await prisma.apiKey.updateMany({
+    where: { id: kid, agentId, agent: { userId }, revokedAt: null },
+    data: { revokedAt: new Date() },
   });
   return count > 0;
 }

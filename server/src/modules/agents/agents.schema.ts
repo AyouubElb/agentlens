@@ -24,8 +24,11 @@ export const createCriterionSchema = criterionInputSchema;
 
 export const updateCriterionSchema = criterionInputSchema.partial();
 
+export const createKeySchema = z.object({ name: z.string().min(3).max(50) });
+
 export const idParam = z.object({ id: z.string() });
 export const criterionParam = z.object({ id: z.string(), cid: z.string() });
+export const keyParam = z.object({ id: z.string(), kid: z.string() });
 
 export const agentSchema = z.object({
   id: z.string(),
@@ -48,6 +51,18 @@ export const rubricSchema = z.object({
 
 export const agentDetailSchema = agentSchema.extend({ rubric: rubricSchema });
 
+export const apiKeySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  prefix: z.string(),
+  createdAt: z.date(),
+  revokedAt: z.date().nullable(),
+  status: z.enum(["active", "revoked"]),
+});
+
+// The plaintext key is shown once, only in the creation response.
+export const createdKeySchema = apiKeySchema.extend({ key: z.string() });
+
 export const okSchema = z.object({ ok: z.boolean() });
 
 export type CreateAgentInput = z.infer<typeof createAgentSchema>;
@@ -55,7 +70,10 @@ export type UpdateAgentInput = z.infer<typeof updateAgentSchema>;
 export type UpdateRubricInput = z.infer<typeof updateRubricSchema>;
 export type CreateCriterionInput = z.infer<typeof createCriterionSchema>;
 export type UpdateCriterionInput = z.infer<typeof updateCriterionSchema>;
+export type CreateKeyInput = z.infer<typeof createKeySchema>;
 export type PublicAgent = z.infer<typeof agentSchema>;
 export type PublicCriterion = z.infer<typeof criterionSchema>;
 export type PublicRubric = z.infer<typeof rubricSchema>;
 export type PublicAgentDetail = z.infer<typeof agentDetailSchema>;
+export type PublicApiKey = z.infer<typeof apiKeySchema>;
+export type CreatedApiKey = z.infer<typeof createdKeySchema>;

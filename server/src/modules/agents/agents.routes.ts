@@ -4,11 +4,15 @@ import { authGuard } from "../../shared/middleware/authGuard.js";
 import {
   agentDetailSchema,
   agentSchema,
+  apiKeySchema,
   createAgentSchema,
   createCriterionSchema,
+  createdKeySchema,
+  createKeySchema,
   criterionParam,
   criterionSchema,
   idParam,
+  keyParam,
   okSchema,
   rubricSchema,
   updateAgentSchema,
@@ -96,6 +100,32 @@ export function agentRoutes(app: FastifyInstance): void {
     { schema: { params: criterionParam, response: { 200: okSchema } } },
     async (req) => {
       await service.removeCriterion(req.params.cid, req.params.id, req.user.sub);
+      return { ok: true };
+    },
+  );
+
+  r.post(
+    "/:id/keys",
+    { schema: { params: idParam, body: createKeySchema, response: { 201: createdKeySchema } } },
+    async (req, reply) => {
+      const key = await service.issueKey(req.params.id, req.user.sub, req.body);
+      return reply.code(201).send(key);
+    },
+  );
+
+  r.get(
+    "/:id/keys",
+    { schema: { params: idParam, response: { 200: z.array(apiKeySchema) } } },
+    async (req) => {
+      return service.listKeys(req.params.id, req.user.sub);
+    },
+  );
+
+  r.delete(
+    "/:id/keys/:kid",
+    { schema: { params: keyParam, response: { 200: okSchema } } },
+    async (req) => {
+      await service.revokeKey(req.params.kid, req.params.id, req.user.sub);
       return { ok: true };
     },
   );
