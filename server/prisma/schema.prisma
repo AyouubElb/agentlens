@@ -25,6 +25,7 @@ model Agent {
   name      String
   createdAt DateTime @default(now())
   rubric    Rubric?
+  apiKeys   ApiKey[]
 
   @@index([userId])
 }
@@ -44,5 +45,19 @@ model Criterion {
   name        String
   description String
   weight      Float
+}
+
+model ApiKey {
+  id        String    @id @default(cuid())
+  agentId   String
+  agent     Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  name      String
+  prefix    String
+  keyHash   String
+  createdAt DateTime  @default(now())
+  revokedAt DateTime?
+
+  @@index([agentId])
+  @@index([keyHash])
 }
 
