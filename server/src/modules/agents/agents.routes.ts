@@ -15,9 +15,13 @@ import {
   keyParam,
   okSchema,
   rubricSchema,
+  runListItemSchema,
+  runsQuery,
   updateAgentSchema,
   updateCriterionSchema,
   updateRubricSchema,
+  versionLabelParam,
+  versionSchema,
 } from "./agents.schema.js";
 import * as service from "./agents.service.js";
 import { z } from "zod";
@@ -127,6 +131,30 @@ export function agentRoutes(app: FastifyInstance): void {
     async (req) => {
       await service.revokeKey(req.params.kid, req.params.id, req.user.sub);
       return { ok: true };
+    },
+  );
+
+  r.get(
+    "/:id/runs",
+    { schema: { params: idParam, querystring: runsQuery, response: { 200: z.array(runListItemSchema) } } },
+    async (req) => {
+      return service.listRuns(req.params.id, req.user.sub, req.query);
+    },
+  );
+
+  r.get(
+    "/:id/versions",
+    { schema: { params: idParam, response: { 200: z.array(versionSchema) } } },
+    async (req) => {
+      return service.listVersions(req.params.id, req.user.sub);
+    },
+  );
+
+  r.get(
+    "/:id/versions/:label",
+    { schema: { params: versionLabelParam, response: { 200: versionSchema } } },
+    async (req) => {
+      return service.getVersion(req.params.id, req.user.sub, req.params.label);
     },
   );
 }

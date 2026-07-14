@@ -1,4 +1,4 @@
-import type { Agent, ApiKey, Criterion } from "../../generated/prisma/client.js";
+import type { Agent, AgentVersion, ApiKey, Criterion } from "../../generated/prisma/client.js";
 import { NotFoundError } from "../../shared/errors/errors.js";
 import { generateApiKey } from "../../shared/auth/apiKey.js";
 import type {
@@ -11,11 +11,14 @@ import type {
   PublicApiKey,
   PublicCriterion,
   PublicRubric,
+  PublicRunListItem,
+  PublicVersion,
+  RunsQuery,
   UpdateAgentInput,
   UpdateCriterionInput,
   UpdateRubricInput,
 } from "./agents.schema.js";
-import type { AgentWithRubric, RubricWithCriteria } from "./agents.repo.js";
+import type { AgentWithRubric, RubricWithCriteria, RunWithLabel } from "./agents.repo.js";
 import * as repo from "./agents.repo.js";
 
 function toAgent(a: Agent): PublicAgent {
@@ -137,4 +140,42 @@ export async function revokeKey(kid: string, agentId: string, userId: string): P
   if (!(await repo.revokeKey(kid, agentId, userId))) {
     throw new NotFoundError("API key not found");
   }
+}
+
+function toVersion(v: AgentVersion): PublicVersion {
+  return { id: v.id, label: v.label, createdAt: v.createdAt };
+}
+
+function toRunListItem(r: RunWithLabel): PublicRunListItem {
+  return {
+    id: r.id,
+    versionLabel: r.agentVersion.label,
+    status: r.status,
+    overallScore: r.overallScore,
+    createdAt: r.createdAt,
+  };
+}
+
+export async function listRuns(
+  agentId: string,
+  userId: string,
+  query: RunsQuery,
+): Promise<PublicRunListItem[]> {
+  if (!(await repo.findAgent(agentId, userId))) throw new NotFoundError("Agent not found");
+  return (await repo.listRuns(agentId, userId, query.status)).map(toRunListItem);
+}
+
+export async function listVersions(agentId: string, userId: string): Promise<PublicVersion[]> {
+  if (!(await repo.findAgent(agentId, userId))) throw new NotFoundError("Agent not found");
+  return (await repo.listVersions(agentId, userId)).map(toVersion);
+}
+
+export async function getVersion(
+  agentId: string,
+  userId: string,
+  label: string,
+): Promise<PublicVersion> {
+  const version = await repo.findVersion(agentId, userId, label);
+  if (!version) throw new NotFoundError("Version not found");
+  return toVersion(version);
 }

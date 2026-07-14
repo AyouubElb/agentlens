@@ -1,4 +1,12 @@
-import type { Agent, ApiKey, Criterion, Rubric } from "../../generated/prisma/client.js";
+import type {
+  Agent,
+  AgentVersion,
+  ApiKey,
+  Criterion,
+  Rubric,
+  Run,
+  RunStatus,
+} from "../../generated/prisma/client.js";
 import { prisma } from "../../db/client.js";
 import type {
   CreateAgentInput,
@@ -138,4 +146,33 @@ export async function revokeKey(kid: string, agentId: string, userId: string): P
     data: { revokedAt: new Date() },
   });
   return count > 0;
+}
+
+export type RunWithLabel = Run & { agentVersion: Pick<AgentVersion, "label"> };
+
+export function listRuns(
+  agentId: string,
+  userId: string,
+  status?: RunStatus,
+): Promise<RunWithLabel[]> {
+  return prisma.run.findMany({
+    where: { agentVersion: { agentId, agent: { userId } }, ...(status ? { status } : {}) },
+    include: { agentVersion: { select: { label: true } } },
+    orderBy: { createdAt: "desc" },
+  }) as Promise<RunWithLabel[]>;
+}
+
+export function listVersions(agentId: string, userId: string): Promise<AgentVersion[]> {
+  return prisma.agentVersion.findMany({
+    where: { agentId, agent: { userId } },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export function findVersion(
+  agentId: string,
+  userId: string,
+  label: string,
+): Promise<AgentVersion | null> {
+  return prisma.agentVersion.findFirst({ where: { agentId, label, agent: { userId } } });
 }

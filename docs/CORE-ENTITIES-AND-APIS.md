@@ -57,16 +57,14 @@ transaction. (A rubric-template library — pick/clone a predefined rubric — i
 | description | what the human scores against |
 | weight | float; used in the weighted rollup |
 
-**AgentVersion** — an immutable snapshot of the config the agent ran under.
-**Client-declared:** the ingest payload names a version label; the version is **auto-created
-on first sight** of a new label. Its `config` is opaque metadata the client sends (prompt,
-settings) — AgentLens stores and displays it, never interprets it.
+**AgentVersion** — a client-declared version marker. The ingest payload names a version label;
+the version is **auto-created on first sight** of a new label. **Stage one: label-only** (no stored
+config — deferred).
 | Field | Notes |
 |-------|-------|
 | id | PK |
 | agent_id | FK → Agent |
 | label | client-declared string, e.g. "v2"; unique per agent |
-| config | opaque JSON, client-supplied |
 | created_at | |
 
 **Run** — one ingested execution of the agent (Langfuse would call this a trace).
@@ -77,8 +75,8 @@ The unit that gets scored. Belongs to exactly one Version.
 | agent_version_id | FK → AgentVersion (resolved from API key's agent + payload's version label) |
 | input | the question asked |
 | output | the agent's answer |
-| context | what the agent retrieved (array of text) |
-| metadata | model, latency, tokens, cost — optional, client-supplied |
+| context | what the agent used (RAG chunks, chat history, rows…) — opaque JSON, optional |
+| metadata | model, latency, tokens, cost — opaque JSON, optional, client-supplied |
 | status | `unscored` \| `scored` |
 | overall_score | denormalized weighted rollup; null until scored (hot path for trend/comparison reads) |
 | created_at | |
@@ -186,11 +184,11 @@ ingest** (Option C), so there is **no dashboard "create version"**.
 | GET /agents/:id/keys | list keys (masked/hashed) |
 | DELETE /agents/:id/keys/:kid | revoke a key |
 
-### Ingest API (API key, `/v1`)
+### Ingest API (API key via `Authorization: Bearer`)
 
 | Method + path | Purpose |
 |---|---|
-| POST /v1/runs | submit a run (input, output, context, version label, metadata). Resolves key → agent, finds-or-creates the version, stores the run `unscored` (FR1). |
+| POST /api/v1/runs | submit a run (versionLabel, input, output, context, metadata). Resolves key → agent, finds-or-creates the version, stores the run `unscored` (FR1). |
 
 ### Design notes
 
