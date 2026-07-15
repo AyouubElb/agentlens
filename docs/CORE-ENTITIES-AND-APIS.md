@@ -169,8 +169,8 @@ ingest** (Option C), so there is **no dashboard "create version"**.
 | Method + path | Purpose |
 |---|---|
 | GET /agents/:id/runs | list runs (filter by version, `status=unscored`; paginated) — the scoring queue |
-| GET /runs/:id | run detail (input, output, context, its scores) — the drill-down |
-| POST /runs/:id/scores | submit per-criterion human scores → flips run to `scored`, computes overall (FR3) |
+| GET /runs/:id | the evaluation page: input, output, context, metadata + each rubric criterion with its score (or null) — one fetch renders the grading UI |
+| POST /runs/:id/scores | submit a score (int 1–5) for **every** rubric criterion → upserts scores, computes weighted overall, flips run to `scored`. Idempotent (re-score updates in place). (FR3) |
 
 **Comparison (FR4 — the hero)**
 | Method + path | Purpose |
