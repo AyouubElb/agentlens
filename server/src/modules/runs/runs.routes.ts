@@ -2,7 +2,14 @@ import type { FastifyInstance } from "fastify";
 import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { apiKeyGuard } from "../../shared/middleware/apiKeyGuard.js";
 import { authGuard } from "../../shared/middleware/authGuard.js";
-import { ingestAckSchema, ingestRunSchema, runDetailSchema, runIdParam } from "./runs.schema.js";
+import {
+  ingestAckSchema,
+  ingestRunSchema,
+  runDetailSchema,
+  runIdParam,
+  scoredRunSchema,
+  submitScoresSchema,
+} from "./runs.schema.js";
 import * as service from "./runs.service.js";
 
 // Machine ingest surface (API-key auth).
@@ -28,4 +35,12 @@ export function runsDashboardRoutes(app: FastifyInstance): void {
   r.get("/:id", { schema: { params: runIdParam, response: { 200: runDetailSchema } } }, async (req) => {
     return service.getRun(req.params.id, req.user.sub);
   });
+
+  r.post(
+    "/:id/scores",
+    { schema: { params: runIdParam, body: submitScoresSchema, response: { 200: scoredRunSchema } } },
+    async (req) => {
+      return service.submitScores(req.params.id, req.user.sub, req.body);
+    },
+  );
 }

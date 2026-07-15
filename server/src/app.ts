@@ -32,7 +32,8 @@ export function buildApp(): FastifyInstance {
 
   app.register(helmet);
   app.register(cors, { origin: env.CORS_ORIGIN, credentials: true });
-  app.register(rateLimit, { max: 100, timeWindow: "1 minute" });
+  // Tests fire many requests from one origin; the per-IP limit would make them order-dependent.
+  app.register(rateLimit, { max: env.NODE_ENV === "test" ? Number.MAX_SAFE_INTEGER : 100, timeWindow: "1 minute" });
   app.register(cookie);
   app.register(jwt, { secret: env.JWT_SECRET, cookie: { cookieName: "token", signed: false } });
   app.register(sensible);

@@ -40,12 +40,13 @@ model Rubric {
 }
 
 model Criterion {
-  id          String @id @default(cuid())
+  id          String  @id @default(cuid())
   rubricId    String
-  rubric      Rubric @relation(fields: [rubricId], references: [id], onDelete: Cascade)
+  rubric      Rubric  @relation(fields: [rubricId], references: [id], onDelete: Cascade)
   name        String
   description String
   weight      Float
+  scores      Score[]
 }
 
 model ApiKey {
@@ -89,8 +90,22 @@ model Run {
   status         RunStatus    @default(unscored)
   overallScore   Float?
   createdAt      DateTime     @default(now())
+  scores         Score[]
 
   @@index([agentVersionId])
   @@index([status])
+}
+
+model Score {
+  id            String    @id @default(cuid())
+  runId         String
+  run           Run       @relation(fields: [runId], references: [id], onDelete: Cascade)
+  criterionId   String
+  criterion     Criterion @relation(fields: [criterionId], references: [id], onDelete: Cascade)
+  value         Int
+  justification String?
+
+  @@unique([runId, criterionId])
+  @@index([runId])
 }
 

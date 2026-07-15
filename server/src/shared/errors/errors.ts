@@ -32,3 +32,9 @@ export class NotFoundError extends DomainError {
     super(message, 404);
   }
 }
+
+export class ValidationError extends DomainError {
+  constructor(message = "Validation failed") {
+    super(message, 400);
+  }
+}

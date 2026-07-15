@@ -125,6 +125,112 @@ describe("run detail", () => {
   });
 });
 
+// A 2-criterion agent (weights 2 and 1) to exercise real weighting.
+const scoringAgent = {
+  name: "Scored Bot",
+  rubric: {
+    name: "Quality",
+    criteria: [
+      { name: "groundedness", description: "supported by context", weight: 2 },
+      { name: "relevance", description: "answers the question", weight: 1 },
+    ],
+  },
+};
+
+async function setupScoringRun(
+  suffix: string,
+): Promise<{ token: string; agentId: string; runId: string; cids: string[] }> {
+  const token = await authCookie(suffix);
+  const agentId = (await as(token, "POST", AGENTS, scoringAgent)).json().id;
+  const key = (await as(token, "POST", `${AGENTS}/${agentId}/keys`, { name: "prod" })).json().key;
+  const runId = (await ingest(key, validRun)).json().id;
+  const detail = (await as(token, "GET", `/api/v1/runs/${runId}`)).json();
+  const cids = detail.criteria.map((c: { id: string }) => c.id);
+  return { token, agentId, runId, cids };
+}
+
+describe("scoring", () => {
+  test("score all criteria → 200, run scored, weighted overall correct", async () => {
+    const { token, runId, cids } = await setupScoringRun("1");
+    const res = await as(token, "POST", `/api/v1/runs/${runId}/scores`, {
+      scores: [
+        { criterionId: cids[0], value: 4 },
+        { criterionId: cids[1], value: 5 },
+      ],
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().status).toBe("scored");
+    expect(res.json().overallScore).toBeCloseTo(13 / 3); // (4*2 + 5*1)/3
+
+    const detail = (await as(token, "GET", `/api/v1/runs/${runId}`)).json();
+    expect(detail.status).toBe("scored");
+    expect(detail.overallScore).toBeCloseTo(13 / 3);
+    const scored = detail.criteria.find((c: { id: string }) => c.id === cids[0]);
+    expect(scored.score.value).toBe(4);
+  });
+
+  test("missing a criterion / unknown id / duplicate → 400, run stays unscored", async () => {
+    const { token, runId, cids } = await setupScoringRun("1");
+    const partial = await as(token, "POST", `/api/v1/runs/${runId}/scores`, {
+      scores: [{ criterionId: cids[0], value: 4 }],
+    });
+    expect(partial.statusCode).toBe(400);
+
+    const unknown = await as(token, "POST", `/api/v1/runs/${runId}/scores`, {
+      scores: [
+        { criterionId: cids[0], value: 4 },
+        { criterionId: "nope", value: 5 },
+      ],
+    });
+    expect(unknown.statusCode).toBe(400);
+
+    const dup = await as(token, "POST", `/api/v1/runs/${runId}/scores`, {
+      scores: [
+        { criterionId: cids[0], value: 4 },
+        { criterionId: cids[0], value: 5 },
+      ],
+    });
+    expect(dup.statusCode).toBe(400);
+
+    expect((await as(token, "GET", `/api/v1/runs/${runId}`)).json().status).toBe("unscored");
+  });
+
+  test("value out of range → 400", async () => {
+    const { token, runId, cids } = await setupScoringRun("1");
+    const res = await as(token, "POST", `/api/v1/runs/${runId}/scores`, {
+      scores: [
+        { criterionId: cids[0], value: 6 },
+        { criterionId: cids[1], value: 3 },
+      ],
+    });
+    expect(res.statusCode).toBe(400);
+  });
+
+  test("re-score updates in place — overall recomputes, score rows stay == criteria count", async () => {
+    const { token, runId, cids } = await setupScoringRun("1");
+    const body = (v0: number, v1: number) => ({
+      scores: [
+        { criterionId: cids[0], value: v0 },
+        { criterionId: cids[1], value: v1 },
+      ],
+    });
+    await as(token, "POST", `/api/v1/runs/${runId}/scores`, body(4, 5));
+    const second = await as(token, "POST", `/api/v1/runs/${runId}/scores`, body(2, 2));
+    expect(second.json().overallScore).toBeCloseTo(2); // (2*2 + 2*1)/3
+    expect(await prisma.score.count({ where: { runId } })).toBe(2);
+  });
+
+  test("tenant isolation → 404; unauthenticated → 401", async () => {
+    const { runId, cids } = await setupScoringRun("a");
+    const other = await authCookie("b");
+    const body = { scores: [{ criterionId: cids[0], value: 4 }, { criterionId: cids[1], value: 5 }] };
+    expect((await as(other, "POST", `/api/v1/runs/${runId}/scores`, body)).statusCode).toBe(404);
+    expect(
+      (await app.inject({ method: "POST", url: `/api/v1/runs/${runId}/scores`, payload: body })).statusCode,
+    ).toBe(401);
+  });
+});
+
 describe("agent runs & versions reads", () => {
   test("list runs, filter by status, list/get versions; tenant-isolated", async () => {
     const { token, agentId, key } = await setupAgent("a");
