@@ -19,13 +19,14 @@ model User {
 }
 
 model Agent {
-  id        String   @id @default(cuid())
+  id        String         @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   name      String
-  createdAt DateTime @default(now())
+  createdAt DateTime       @default(now())
   rubric    Rubric?
   apiKeys   ApiKey[]
+  versions  AgentVersion[]
 
   @@index([userId])
 }
@@ -59,5 +60,37 @@ model ApiKey {
 
   @@index([agentId])
   @@index([keyHash])
+}
+
+enum RunStatus {
+  unscored
+  scored
+}
+
+model AgentVersion {
+  id        String   @id @default(cuid())
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  label     String
+  createdAt DateTime @default(now())
+  runs      Run[]
+
+  @@unique([agentId, label])
+}
+
+model Run {
+  id             String       @id @default(cuid())
+  agentVersionId String
+  agentVersion   AgentVersion @relation(fields: [agentVersionId], references: [id], onDelete: Cascade)
+  input          String
+  output         String
+  context        Json?
+  metadata       Json?
+  status         RunStatus    @default(unscored)
+  overallScore   Float?
+  createdAt      DateTime     @default(now())
+
+  @@index([agentVersionId])
+  @@index([status])
 }
 

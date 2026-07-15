@@ -15,9 +15,11 @@ import {
 
 import { env } from "./config/env.js";
 import "./shared/auth/jwt.js";
+import "./shared/auth/apiKeyRequest.js";
 import { registerErrorHandler } from "./shared/errors/handler.js";
 import { authRoutes } from "./modules/auth/auth.routes.js";
 import { agentRoutes } from "./modules/agents/agents.routes.js";
+import { runsDashboardRoutes, runsIngestRoutes } from "./modules/runs/runs.routes.js";
 
 export function buildApp(): FastifyInstance {
   const app = Fastify({
@@ -39,10 +41,14 @@ export function buildApp(): FastifyInstance {
   });
   app.register(swaggerUi, { routePrefix: "/docs" });
 
+  app.decorateRequest("agentId", "");
+
   app.withTypeProvider<ZodTypeProvider>().get("/health", () => ({ status: "ok" }));
 
   app.register(async (instance) => authRoutes(instance), { prefix: "/api/v1/auth" });
   app.register(async (instance) => agentRoutes(instance), { prefix: "/api/v1/agents" });
+  app.register(async (instance) => runsIngestRoutes(instance), { prefix: "/api/v1" });
+  app.register(async (instance) => runsDashboardRoutes(instance), { prefix: "/api/v1/runs" });
 
   return app;
 }
