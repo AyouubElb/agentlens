@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design tokens — the single source of truth. No hex belongs anywhere else in src/.
+   Source: "AgentLens Design System" v2.0 · dark · Jul 2026. */
+@layer base {
+  :root {
+    /* Ground */
+    --color-bg: #17151a;
+    --color-surface: #201d24;
+    --color-raised: #2a262f;
+    --color-hairline: #38333f;
+
+    /* Borders */
+    --color-border-input: #454050;
+    --color-border-card: #423d4a;
+    --color-border-muted: #4a4552;
+    --color-border-dashed: #4d4857;
+
+    --color-input: #24212a;
+
+    /* Text. `faint` overrides v2.0's #726d78, which lands ~3.5:1 at the 11px it's used at. */
+    --color-text: #ece9f0;
+    --color-text-muted: #a09aa8;
+    --color-text-faint: #8a8593;
+    --color-skeleton: #3a3542;
+
+    /* Accent — cyan, "the lens" */
+    --color-accent: #22d3c8;
+    --color-accent-hover: #5fe6dd;
+    --color-accent-pressed: #12a89f;
+    --color-accent-tint: rgb(34 211 200 / 0.12);
+    --color-accent-border: rgb(34 211 200 / 0.35);
+    --color-accent-ink: #062b28;
+    --color-accent-ring: rgb(34 211 200 / 0.2);
+    --color-accent-selection: rgb(34 211 200 / 0.28);
+
+    /* Semantic — status only */
+    --color-success: #30a46c;
+    --color-success-tint: rgb(48 164 108 / 0.14);
+    --color-success-text: #4cc38a;
+
+    --color-warning: #e0a020;
+    --color-warning-tint: rgb(224 160 32 / 0.14);
+    --color-warning-text: #e8b84b;
+
+    --color-danger: #e5484d;
+    --color-danger-hover: #ef5b60;
+    --color-danger-tint: rgb(229 72 77 / 0.14);
+    --color-danger-tint-hover: rgb(229 72 77 / 0.2);
+    --color-danger-text: #f0888b;
+    --color-danger-border: rgb(229 72 77 / 0.5);
+    --color-danger-ring: rgb(229 72 77 / 0.18);
+
+    /* Score ramp 1–5 */
+    --color-score-1: #c21f3a;
+    --color-score-2: #d9722f;
+    --color-score-3: #c9a227;
+    --color-score-4: #6e8f3e;
+    --color-score-5: #157f3c;
+    --color-score-ink: #201d24; /* score-3 only; the rest take white */
+
+    /* Elevation */
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-md: 0 4px 16px rgb(0 0 0 / 0.45);
+    --shadow-lg: 0 16px 40px rgb(0 0 0 / 0.55);
+  }
+
+  html {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+  }
+
+  body {
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: var(--color-accent-selection);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  a {
+    color: var(--color-accent-hover);
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--color-accent);
+  }
+}
+
+@layer utilities {
+  @keyframes al-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes al-shimmer {
+    0%,
+    100% {
+      opacity: 0.4;
+    }
+    50% {
+      opacity: 0.9;
+    }
+  }
+
+  @keyframes al-progress {
+    from {
+      width: 100%;
+    }
+    to {
+      width: 0%;
+    }
+  }
+}
