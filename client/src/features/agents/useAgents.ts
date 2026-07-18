@@ -15,6 +15,14 @@ export function useAgents() {
   });
 }
 
+export function useAgent(id: string) {
+  return useQuery({
+    queryKey: agentKeys.detail(id),
+    queryFn: () => agentsApi.get(id),
+    enabled: id !== "",
+  });
+}
+
 export function useCreateAgent() {
   const qc = useQueryClient();
   return useMutation({

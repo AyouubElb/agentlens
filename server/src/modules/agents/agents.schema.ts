@@ -60,6 +60,7 @@ export const apiKeySchema = z.object({
   prefix: z.string(),
   createdAt: z.date(),
   revokedAt: z.date().nullable(),
+  lastUsedAt: z.date().nullable(),
   status: z.enum(["active", "revoked"]),
 });
 
@@ -75,6 +76,7 @@ export const versionSchema = z.object({
 export const runListItemSchema = z.object({
   id: z.string(),
   versionLabel: z.string(),
+  input: z.string(),
   status: z.enum(["unscored", "scored"]),
   overallScore: z.number().nullable(),
   createdAt: z.date(),

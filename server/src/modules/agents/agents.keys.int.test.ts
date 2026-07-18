@@ -71,6 +71,7 @@ describe("api keys", () => {
     expect(body.prefix).toBe(body.key.slice(0, 11));
     expect(body.status).toBe("active");
     expect(body.revokedAt).toBeNull();
+    expect(body.lastUsedAt).toBeNull();
   });
 
   test("list never leaks plaintext or keyHash", async () => {
