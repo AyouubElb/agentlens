@@ -15,9 +15,10 @@ export async function apiKeyGuard(request: FastifyRequest): Promise<void> {
 
   const key = await prisma.apiKey.findFirst({
     where: { keyHash: hashApiKey(token), revokedAt: null },
-    select: { agentId: true },
+    select: { id: true, agentId: true },
   });
   if (!key) throw new UnauthorizedError();
 
+  await prisma.apiKey.update({ where: { id: key.id }, data: { lastUsedAt: new Date() } });
   request.agentId = key.agentId;
 }

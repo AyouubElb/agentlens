@@ -45,6 +45,7 @@ function toApiKey(k: ApiKey): PublicApiKey {
     prefix: k.prefix,
     createdAt: k.createdAt,
     revokedAt: k.revokedAt,
+    lastUsedAt: k.lastUsedAt,
     status: k.revokedAt ? "revoked" : "active",
   };
 }
@@ -150,6 +151,7 @@ function toRunListItem(r: RunWithLabel): PublicRunListItem {
   return {
     id: r.id,
     versionLabel: r.agentVersion.label,
+    input: r.input,
     status: r.status,
     overallScore: r.overallScore,
     createdAt: r.createdAt,

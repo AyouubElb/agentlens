@@ -111,6 +111,20 @@ describe("ingest", () => {
     expect(detail.metadata).toEqual(validRun.metadata);
     expect(detail.versionLabel).toBe("v1");
   });
+
+  test("ingest stamps the key's lastUsedAt (null until first use)", async () => {
+    const { token, agentId, key } = await setupAgent("1");
+    expect((await as(token, "GET", `${AGENTS}/${agentId}/keys`)).json()[0].lastUsedAt).toBeNull();
+    await ingest(key, validRun);
+    expect((await as(token, "GET", `${AGENTS}/${agentId}/keys`)).json()[0].lastUsedAt).not.toBeNull();
+  });
+
+  test("run list includes the run input", async () => {
+    const { token, agentId, key } = await setupAgent("1");
+    await ingest(key, validRun);
+    const list = (await as(token, "GET", `${AGENTS}/${agentId}/runs`)).json();
+    expect(list[0].input).toBe(validRun.input);
+  });
 });
 
 describe("run detail", () => {

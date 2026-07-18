@@ -53,11 +53,12 @@ model ApiKey {
   id        String    @id @default(cuid())
   agentId   String
   agent     Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  name      String
-  prefix    String
-  keyHash   String
-  createdAt DateTime  @default(now())
-  revokedAt DateTime?
+  name       String
+  prefix     String
+  keyHash    String
+  createdAt  DateTime  @default(now())
+  revokedAt  DateTime?
+  lastUsedAt DateTime?
 
   @@index([agentId])
   @@index([keyHash])

@@ -1,8 +1,9 @@
 import { useState, type ComponentType } from "react";
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { LayoutGrid, Bot, ClipboardCheck, ChevronDown, LogOut } from "lucide-react";
 import { Reticle } from "@/components/ui/Logo";
 import { useLogout, useMe } from "@/features/auth/useAuth";
+import { useAgent } from "@/features/agents/useAgents";
 import { cn } from "@/lib/cn";
 
 const nav = [
@@ -17,6 +18,24 @@ function pageTitle(pathname: string): string {
     nav
       .filter((item) => pathname === item.to || pathname.startsWith(`${item.to}/`))
       .sort((a, b) => b.to.length - a.to.length)[0]?.label ?? ""
+  );
+}
+
+// On an agent-detail route, the header reads "Agents / <name>"; elsewhere it's the plain page title.
+function HeaderTitle({ pathname }: { pathname: string }) {
+  const detailId = pathname.match(/^\/agents\/([^/]+)/)?.[1];
+  const { data: agent } = useAgent(detailId ?? "");
+
+  if (!detailId) return <span>{pageTitle(pathname)}</span>;
+
+  return (
+    <span className="flex items-center gap-2">
+      <Link to="/agents" className="font-normal text-text-muted hover:text-text">
+        Agents
+      </Link>
+      <span className="text-text-faint">/</span>
+      <span>{agent?.name ?? "…"}</span>
+    </span>
   );
 }
 
@@ -122,7 +141,9 @@ export function AppShell() {
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-14 shrink-0 items-center justify-between border-b border-hairline bg-raised px-6">
-          <div className="text-lg font-bold">{pageTitle(pathname)}</div>
+          <div className="text-lg font-bold">
+            <HeaderTitle pathname={pathname} />
+          </div>
           <UserMenu />
         </header>
         <main className="flex-1 overflow-auto">
