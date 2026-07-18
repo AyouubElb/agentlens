@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import { AppShell } from "@/components/layout/AppShell";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { AuthPage } from "@/pages/AuthPage";
+import { AgentsPage } from "@/pages/AgentsPage";
 import { PlaceholderPage } from "@/pages/PlaceholderPage";
 
 export const router = createBrowserRouter([
@@ -15,7 +16,8 @@ export const router = createBrowserRouter([
         children: [
           { path: "/", element: <Navigate to="/overview" replace /> },
           { path: "/overview", element: <PlaceholderPage title="Overview" /> },
-          { path: "/agents", element: <PlaceholderPage title="Agents" /> },
+          { path: "/agents", element: <AgentsPage /> },
+          { path: "/agents/:id", element: <PlaceholderPage title="Agent detail" /> },
           { path: "/scoring", element: <PlaceholderPage title="Scoring queue" /> },
         ],
       },

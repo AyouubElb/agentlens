@@ -1,5 +1,5 @@
 import { useState, type ComponentType } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { LayoutGrid, Bot, ClipboardCheck, ChevronDown, LogOut } from "lucide-react";
 import { Reticle } from "@/components/ui/Logo";
 import { useLogout, useMe } from "@/features/auth/useAuth";
@@ -10,6 +10,15 @@ const nav = [
   { to: "/agents", label: "Agents", icon: Bot },
   { to: "/scoring", label: "Scoring", icon: ClipboardCheck },
 ];
+
+// Longest prefix wins so /agents/:id still reads "Agents".
+function pageTitle(pathname: string): string {
+  return (
+    nav
+      .filter((item) => pathname === item.to || pathname.startsWith(`${item.to}/`))
+      .sort((a, b) => b.to.length - a.to.length)[0]?.label ?? ""
+  );
+}
 
 function NavItem({ to, label, icon: Icon }: { to: string; label: string; icon: ComponentType<{ size?: number; strokeWidth?: number }> }) {
   return (
@@ -107,12 +116,13 @@ function UserMenu() {
 }
 
 export function AppShell() {
+  const { pathname } = useLocation();
   return (
     <div className="flex h-screen overflow-hidden bg-bg text-text">
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-14 shrink-0 items-center justify-between border-b border-hairline bg-raised px-6">
-          <div className="text-lg font-bold">Overview</div>
+          <div className="text-lg font-bold">{pageTitle(pathname)}</div>
           <UserMenu />
         </header>
         <main className="flex-1 overflow-auto">

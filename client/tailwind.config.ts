@@ -12,6 +12,7 @@ export default {
         hairline: "var(--color-hairline)",
         input: "var(--color-input)",
         skeleton: "var(--color-skeleton)",
+        scrim: "var(--color-scrim)",
 
         border: {
           input: "var(--color-border-input)",
