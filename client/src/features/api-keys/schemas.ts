@@ -8,17 +8,6 @@ export const issueKeySchema = z.object({
 
 export type IssueKeyInput = z.infer<typeof issueKeySchema>;
 
-export interface ApiKey {
-  id: string;
-  name: string;
-  prefix: string;
-  createdAt: string;
-  revokedAt: string | null;
-  lastUsedAt: string | null;
-  status: "active" | "revoked";
-}
-
-// The plaintext key is returned once, only from the issue call.
-export interface CreatedApiKey extends ApiKey {
-  key: string;
-}
+// Response types are generated from the server's OpenAPI spec (see lib/types/api).
+// CreatedApiKey carries the one-time plaintext `key`, returned only from the issue call.
+export type { ApiKey, CreatedApiKey } from "@/lib/types/api";
