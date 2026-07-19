@@ -1,12 +1,2 @@
-/* Mirrors server/src/modules/agents/agents.schema.ts (runListItemSchema). */
-
-export type RunStatus = "unscored" | "scored";
-
-export interface RunListItem {
-  id: string;
-  versionLabel: string;
-  input: string;
-  status: RunStatus;
-  overallScore: number | null;
-  createdAt: string;
-}
+// Response types are generated from the server's OpenAPI spec (see lib/types/api).
+export type { RunListItem, RunStatus } from "@/lib/types/api";

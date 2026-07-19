@@ -120,9 +120,14 @@ in `scoring/`. `Button`, `Input`, `Toaster` know nothing → they live in `compo
   backend error shape (`{ statusCode, error, message }`) into a thrown `ApiError { status, message }`.
   The interceptor also redirects to `/login` on a 401 — except on `/auth/me`, where a 401 is the
   normal "logged out" signal and must not redirect-loop.
-- **Types are hand-written to mirror the server's Zod schemas** (in each feature's `schemas.ts`),
-  kept in sync deliberately. Generating them from the OpenAPI spec (`openapi-typescript`, `gen:api`)
-  is deferred — blocked on a TS-version peer conflict; revisit when wiring agents.
+- **Response types are generated from the server's OpenAPI spec.** The server emits `openapi.json`
+  (`npm run openapi`); the client runs `npm run gen:api` (`openapi-typescript`) to produce
+  `lib/types/api-types.ts`, and `lib/types/api.ts` re-exports clean named aliases (`Agent`, `ApiKey`,
+  `RunListItem`, …) that features import. Regenerate when the server contract changes — a server
+  field change surfaces as a TypeScript error at the exact client sites, not silent drift. **Zod
+  schemas remain** in each feature's `schemas.ts` for **form/input** validation (a separate concern).
+  (The old TS-version peer conflict with `openapi-typescript` is resolved via an npm `overrides`
+  entry — the tool has no runtime TS dependency.)
 
 ## State management
 
@@ -207,7 +212,7 @@ unit/integration split.
 | Forms | **React Hook Form + Zod** (`@hookform/resolvers`) |
 | Animation | **Framer Motion** (auth transition, toasts) |
 | Icons | **lucide-react** |
-| API types | hand-written from server Zod; **openapi-typescript** deferred |
+| API types | **generated** from the server OpenAPI spec (`openapi-typescript`, `gen:api`) |
 | Routing | **React Router** |
 | Styling | **Tailwind CSS** (dark-first charcoal+cyan — see [DESIGN-SYSTEM.md](./DESIGN-SYSTEM.md)) |
 | Testing | **Vitest + React Testing Library** |
@@ -220,6 +225,7 @@ unit/integration split.
 "lint":      "eslint .",
 "lint:fix":  "eslint . --fix",
 "typecheck": "tsc -b",
+"gen:api":   "openapi-typescript ../server/openapi.json -o src/lib/types/api-types.ts",
 "test":      "vitest run",
 "test:watch":"vitest",
 "test:cov":  "vitest run --coverage"

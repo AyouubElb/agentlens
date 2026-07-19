@@ -32,9 +32,5 @@ export const registerSchema = z.object({
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 
-export interface User {
-  id: string;
-  email: string;
-  username: string;
-  createdAt: string;
-}
+// Response type is generated from the server's OpenAPI spec (see lib/types/api).
+export type { User } from "@/lib/types/api";

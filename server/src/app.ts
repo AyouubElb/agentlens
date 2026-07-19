@@ -8,6 +8,8 @@ import sensible from "@fastify/sensible";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import {
+  jsonSchemaTransform,
+  jsonSchemaTransformObject,
   serializerCompiler,
   validatorCompiler,
   type ZodTypeProvider,
@@ -43,6 +45,9 @@ export function buildApp(): FastifyInstance {
   app.register(sensible);
   app.register(swagger, {
     openapi: { info: { title: "AgentLens API", version: "0.1.0" } },
+    // Render the routes' Zod schemas as JSON Schema so the spec describes real payloads.
+    transform: jsonSchemaTransform,
+    transformObject: jsonSchemaTransformObject,
   });
   app.register(swaggerUi, { routePrefix: "/docs" });
 

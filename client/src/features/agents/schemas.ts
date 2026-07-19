@@ -20,25 +20,5 @@ export const createAgentSchema = z.object({
 export type CreateAgentFormValues = z.input<typeof createAgentSchema>;
 export type CreateAgentInput = z.output<typeof createAgentSchema>;
 
-export interface Agent {
-  id: string;
-  name: string;
-  createdAt: string;
-}
-
-export interface Criterion {
-  id: string;
-  name: string;
-  description: string;
-  weight: number;
-}
-
-export interface Rubric {
-  id: string;
-  name: string;
-  criteria: Criterion[];
-}
-
-export interface AgentDetail extends Agent {
-  rubric: Rubric;
-}
+// Response types are generated from the server's OpenAPI spec (see lib/types/api).
+export type { Agent, Criterion, Rubric, AgentDetail } from "@/lib/types/api";
