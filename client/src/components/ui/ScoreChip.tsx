@@ -4,11 +4,11 @@ type Band = 1 | 2 | 3 | 4 | 5;
 
 // Each band draws from its score-N token: colored text/border over a faint tint of the same hue.
 const bands: Record<Band, string> = {
-  1: "text-score-1 border-score-1/40 bg-score-1/[0.14]",
-  2: "text-score-2 border-score-2/40 bg-score-2/[0.14]",
-  3: "text-score-3 border-score-3/40 bg-score-3/[0.14]",
-  4: "text-score-4 border-score-4/40 bg-score-4/[0.14]",
-  5: "text-score-5 border-score-5/40 bg-score-5/[0.16]",
+  1: "text-score-1 border-score-1 bg-score-1/[0.14]",
+  2: "text-score-2 border-score-2 bg-score-2/[0.14]",
+  3: "text-score-3 border-score-3 bg-score-3/[0.14]",
+  4: "text-score-4 border-score-4 bg-score-4/[0.14]",
+  5: "text-score-5 border-score-5 bg-score-5/[0.16]",
 };
 
 interface ScoreChipProps {

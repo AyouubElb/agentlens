@@ -42,6 +42,13 @@ export const agentSchema = z.object({
   createdAt: z.date(),
 });
 
+// Separate from agentSchema so detail/rename stay lean. avgScore null until a run is scored.
+export const agentListItemSchema = agentSchema.extend({
+  runs: z.number().int(),
+  unscored: z.number().int(),
+  avgScore: z.number().nullable(),
+});
+
 export const criterionSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -87,7 +94,7 @@ export const runListItemSchema = z.object({
 
 export const okSchema = z.object({ ok: z.boolean() });
 
-export const agentPageSchema = paginated(agentSchema);
+export const agentPageSchema = paginated(agentListItemSchema);
 export const apiKeyPageSchema = paginated(apiKeySchema);
 export const runListPageSchema = paginated(runListItemSchema);
 
@@ -98,6 +105,7 @@ export type CreateCriterionInput = z.infer<typeof createCriterionSchema>;
 export type UpdateCriterionInput = z.infer<typeof updateCriterionSchema>;
 export type CreateKeyInput = z.infer<typeof createKeySchema>;
 export type PublicAgent = z.infer<typeof agentSchema>;
+export type PublicAgentListItem = z.infer<typeof agentListItemSchema>;
 export type PublicCriterion = z.infer<typeof criterionSchema>;
 export type PublicRubric = z.infer<typeof rubricSchema>;
 export type PublicAgentDetail = z.infer<typeof agentDetailSchema>;

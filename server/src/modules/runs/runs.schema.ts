@@ -88,6 +88,14 @@ export const queueFacetsSchema = z.object({
   versions: z.array(z.string()),
 });
 
+export const overviewSchema = z.object({
+  agents: z.number().int(),
+  totalRuns: z.number().int(),
+  unscored: z.number().int(),
+  avgScore: z.number().nullable(),
+  recentRuns: z.array(globalRunListItemSchema),
+});
+
 export type IngestRunInput = z.infer<typeof ingestRunSchema>;
 export type IngestAck = z.infer<typeof ingestAckSchema>;
 export type RunDetail = z.infer<typeof runDetailSchema>;
@@ -96,3 +104,4 @@ export type ScoredRun = z.infer<typeof scoredRunSchema>;
 export type GlobalRunsQuery = z.infer<typeof globalRunsQuery>;
 export type GlobalRunListItem = z.infer<typeof globalRunListItemSchema>;
 export type QueueFacets = z.infer<typeof queueFacetsSchema>;
+export type Overview = z.infer<typeof overviewSchema>;

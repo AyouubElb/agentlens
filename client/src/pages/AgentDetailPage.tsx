@@ -37,10 +37,10 @@ export function AgentDetailPage() {
   return (
     <div className="mx-auto max-w-content pb-8">
       <AgentDetailHeader agent={agent} />
-      <div className="px-8 pt-5">
+      <div className="px-4 pt-5 sm:px-6 lg:px-8">
         <Tabs tabs={tabs} />
       </div>
-      <div className="px-8 pt-6">
+      <div className="px-4 pt-6 sm:px-6 lg:px-8">
         <Outlet context={agent satisfies AgentDetail} />
       </div>
     </div>

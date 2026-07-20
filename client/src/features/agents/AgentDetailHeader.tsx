@@ -43,13 +43,13 @@ function CopyableId({ id }: { id: string }) {
 // Header stats are placeholders — GET /agents/:id has no run/score aggregates yet (see CLAUDE.md).
 export function AgentDetailHeader({ agent }: { agent: AgentDetail }) {
   return (
-    <div className="flex items-start justify-between gap-6 px-8 pt-7">
+    <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4 px-4 pt-7 sm:px-6 lg:px-8">
       <div>
         <h1 className="text-[24px] font-extrabold tracking-[-0.01em]">{agent.name}</h1>
         <CopyableId id={agent.id} />
       </div>
 
-      <div className="flex items-center gap-9">
+      <div className="flex flex-wrap items-center gap-6 sm:gap-9">
         <Stat label="runs">
           <span className="text-xl font-bold leading-none">{dash}</span>
         </Stat>

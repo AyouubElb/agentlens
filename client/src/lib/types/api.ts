@@ -46,6 +46,9 @@ export type GlobalRunListItem = ItemOf<JSON200<"/api/v1/runs/", "get">>;
 // Dropdown options for the queue's filter bar.
 export type QueueFacets = JSON200<"/api/v1/runs/facets", "get">;
 
+// Dashboard home: user-wide tiles + recent cross-agent runs.
+export type Overview = JSON200<"/api/v1/runs/overview", "get">;
+
 // Evaluation page: run detail + one gradeable row per rubric criterion.
 export type RunDetail = JSON200<"/api/v1/runs/{id}", "get">;
 export type CriterionScore = ArrayItem<RunDetail["criteria"]>;

@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/api-client";
-import type { GlobalRunListItem, Paginated } from "@/lib/types/api";
+import type { GlobalRunListItem, Overview, Paginated } from "@/lib/types/api";
 import type {
   QueueFacets,
   QueueParams,
@@ -44,6 +44,11 @@ export const scoringApi = {
 
   getFacets: async (): Promise<QueueFacets> => {
     const { data } = await apiClient.get<QueueFacets>("/runs/facets");
+    return data;
+  },
+
+  getOverview: async (): Promise<Overview> => {
+    const { data } = await apiClient.get<Overview>("/runs/overview");
     return data;
   },
 

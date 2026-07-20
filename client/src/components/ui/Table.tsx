@@ -25,41 +25,43 @@ export function Table<T>({ columns, rows, rowKey, onRowClick, empty }: TableProp
   const alignOf = (c: Column<T>) => (c.align === "right" ? "text-right" : "text-left");
 
   return (
-    <table className="w-full border-collapse">
-      <thead>
-        <tr className="bg-bg">
-          {columns.map((c, i) => (
-            <th
-              key={i}
-              className={cn(
-                "px-4 py-3 font-mono text-[11px] font-normal uppercase tracking-[0.06em] text-text-faint",
-                alignOf(c),
-                c.className,
-              )}
-            >
-              {c.header}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row) => (
-          <tr
-            key={rowKey(row)}
-            onClick={onRowClick ? () => onRowClick(row) : undefined}
-            className={cn(
-              "border-t border-hairline",
-              onRowClick && "cursor-pointer transition-colors hover:bg-raised",
-            )}
-          >
+    <div className="overflow-x-auto">
+      <table className="w-full border-collapse">
+        <thead>
+          <tr className="bg-bg">
             {columns.map((c, i) => (
-              <td key={i} className={cn("px-4 py-3.5 text-sm", alignOf(c), c.className)}>
-                {c.render(row)}
-              </td>
+              <th
+                key={i}
+                className={cn(
+                  "px-4 py-3 font-mono text-[11px] font-normal uppercase tracking-[0.06em] text-text-faint",
+                  alignOf(c),
+                  c.className,
+                )}
+              >
+                {c.header}
+              </th>
             ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr
+              key={rowKey(row)}
+              onClick={onRowClick ? () => onRowClick(row) : undefined}
+              className={cn(
+                "border-t border-hairline",
+                onRowClick && "cursor-pointer transition-colors hover:bg-raised",
+              )}
+            >
+              {columns.map((c, i) => (
+                <td key={i} className={cn("px-4 py-3.5 text-sm", alignOf(c), c.className)}>
+                  {c.render(row)}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

@@ -114,6 +114,37 @@ export async function queueFacets(
   return { agents, versions: versionRows.map((v) => v.label) };
 }
 
+export interface OverviewStats {
+  agents: number;
+  totalRuns: number;
+  unscored: number;
+  avgScore: number | null;
+  recentRuns: RunWithAgent[];
+}
+
+export async function overviewStats(userId: string): Promise<OverviewStats> {
+  const scoped: Prisma.RunWhereInput = { agentVersion: { agent: { userId } } };
+  const [agents, totalRuns, unscored, agg, recentRuns] = await Promise.all([
+    prisma.agent.count({ where: { userId } }),
+    prisma.run.count({ where: scoped }),
+    prisma.run.count({ where: { ...scoped, status: "unscored" } }),
+    prisma.run.aggregate({ where: { ...scoped, status: "scored" }, _avg: { overallScore: true } }),
+    prisma.run.findMany({
+      where: scoped,
+      include: globalRunInclude,
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    }),
+  ]);
+  return {
+    agents,
+    totalRuns,
+    unscored,
+    avgScore: agg._avg.overallScore,
+    recentRuns: recentRuns as RunWithAgent[],
+  };
+}
+
 // Replace the run's scores and its rollup atomically: upsert each score, then flip the run to scored.
 export function replaceScores(
   runId: string,

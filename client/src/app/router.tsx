@@ -4,7 +4,7 @@ import { ProtectedRoute } from "./ProtectedRoute";
 import { AuthPage } from "@/pages/AuthPage";
 import { AgentsPage } from "@/pages/AgentsPage";
 import { AgentDetailPage, RubricTab, KeysTab, RunsTab } from "@/pages/AgentDetailPage";
-import { PlaceholderPage } from "@/pages/PlaceholderPage";
+import { OverviewPage } from "@/pages/OverviewPage";
 import { ScoringQueuePage } from "@/pages/ScoringQueuePage";
 import { EvaluationPage } from "@/pages/EvaluationPage";
 
@@ -18,7 +18,7 @@ export const router = createBrowserRouter([
         element: <AppShell />,
         children: [
           { path: "/", element: <Navigate to="/overview" replace /> },
-          { path: "/overview", element: <PlaceholderPage title="Overview" /> },
+          { path: "/overview", element: <OverviewPage /> },
           { path: "/agents", element: <AgentsPage /> },
           {
             path: "/agents/:id",

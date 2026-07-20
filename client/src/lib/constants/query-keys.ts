@@ -26,5 +26,6 @@ export const runKeys = {
   // Cross-agent scoring queue (params is the filter object; serialized into the key).
   queue: (params: object) => [...runKeys.all, "queue", params] as const,
   facets: () => [...runKeys.all, "facets"] as const,
+  overview: () => [...runKeys.all, "overview"] as const,
   detail: (id: string) => [...runKeys.all, "detail", id] as const,
 };
