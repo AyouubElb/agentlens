@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Alert, Skeleton } from "@/components/ui/feedback";
+import { Pager } from "@/components/ui/Pager";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Table, type Column } from "@/components/ui/Table";
 import { TableCard } from "@/components/ui/TableCard";
@@ -11,7 +12,8 @@ import { IssueKeyModal } from "./IssueKeyModal";
 import type { ApiKey } from "./schemas";
 
 export function KeysPanel({ agentId }: { agentId: string }) {
-  const { data: keys, isPending, isError } = useApiKeys(agentId);
+  const [page, setPage] = useState(1);
+  const { data, isPending, isError } = useApiKeys(agentId, page);
   const revoke = useRevokeKey(agentId);
   const [issueOpen, setIssueOpen] = useState(false);
   const [confirmId, setConfirmId] = useState<string | null>(null);
@@ -85,12 +87,19 @@ export function KeysPanel({ agentId }: { agentId: string }) {
             ))}
           </div>
         ) : (
-          <Table
-            columns={columns}
-            rows={keys}
-            rowKey={(k) => k.id}
-            empty="No API keys yet. Issue one to start pushing runs."
-          />
+          <>
+            <Table
+              columns={columns}
+              rows={data.items}
+              rowKey={(k) => k.id}
+              empty="No API keys yet. Issue one to start pushing runs."
+            />
+            {data.total > data.limit && (
+              <div className="border-t border-hairline px-5 py-3">
+                <Pager page={data.page} limit={data.limit} total={data.total} onPageChange={setPage} />
+              </div>
+            )}
+          </>
         )}
       </TableCard>
 

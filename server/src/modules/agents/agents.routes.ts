@@ -3,8 +3,9 @@ import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { authGuard } from "../../shared/middleware/authGuard.js";
 import {
   agentDetailSchema,
+  agentPageSchema,
   agentSchema,
-  apiKeySchema,
+  apiKeyPageSchema,
   createAgentSchema,
   createCriterionSchema,
   createdKeySchema,
@@ -13,9 +14,11 @@ import {
   criterionSchema,
   idParam,
   keyParam,
+  listAgentsQuery,
+  listKeysQuery,
   okSchema,
   rubricSchema,
-  runListItemSchema,
+  runListPageSchema,
   runsQuery,
   updateAgentSchema,
   updateCriterionSchema,
@@ -30,9 +33,13 @@ export function agentRoutes(app: FastifyInstance): void {
   const r = app.withTypeProvider<ZodTypeProvider>();
   r.addHook("preHandler", authGuard);
 
-  r.get("/", { schema: { response: { 200: z.array(agentSchema) } } }, async (req) => {
-    return service.list(req.user.sub);
-  });
+  r.get(
+    "/",
+    { schema: { querystring: listAgentsQuery, response: { 200: agentPageSchema } } },
+    async (req) => {
+      return service.list(req.user.sub, req.query);
+    },
+  );
 
   r.post(
     "/",
@@ -119,9 +126,9 @@ export function agentRoutes(app: FastifyInstance): void {
 
   r.get(
     "/:id/keys",
-    { schema: { params: idParam, response: { 200: z.array(apiKeySchema) } } },
+    { schema: { params: idParam, querystring: listKeysQuery, response: { 200: apiKeyPageSchema } } },
     async (req) => {
-      return service.listKeys(req.params.id, req.user.sub);
+      return service.listKeys(req.params.id, req.user.sub, req.query);
     },
   );
 
@@ -136,7 +143,7 @@ export function agentRoutes(app: FastifyInstance): void {
 
   r.get(
     "/:id/runs",
-    { schema: { params: idParam, querystring: runsQuery, response: { 200: z.array(runListItemSchema) } } },
+    { schema: { params: idParam, querystring: runsQuery, response: { 200: runListPageSchema } } },
     async (req) => {
       return service.listRuns(req.params.id, req.user.sub, req.query);
     },

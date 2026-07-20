@@ -87,8 +87,8 @@ describe("agents", () => {
     const a = await authCookie("a");
     const b = await authCookie("b");
     await createAgent(a);
-    expect((await as(a, "GET", AGENTS)).json()).toHaveLength(1);
-    expect((await as(b, "GET", AGENTS)).json()).toHaveLength(0);
+    expect((await as(a, "GET", AGENTS)).json().items).toHaveLength(1);
+    expect((await as(b, "GET", AGENTS)).json().items).toHaveLength(0);
   });
 
   test("get detail returns agent + rubric + criteria", async () => {

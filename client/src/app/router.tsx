@@ -5,6 +5,7 @@ import { AuthPage } from "@/pages/AuthPage";
 import { AgentsPage } from "@/pages/AgentsPage";
 import { AgentDetailPage, RubricTab, KeysTab, RunsTab } from "@/pages/AgentDetailPage";
 import { PlaceholderPage } from "@/pages/PlaceholderPage";
+import { ScoringQueuePage } from "@/pages/ScoringQueuePage";
 
 export const router = createBrowserRouter([
   { path: "/login", element: <AuthPage mode="login" /> },
@@ -28,7 +29,7 @@ export const router = createBrowserRouter([
               { path: "runs", element: <RunsTab /> },
             ],
           },
-          { path: "/scoring", element: <PlaceholderPage title="Scoring queue" /> },
+          { path: "/scoring", element: <ScoringQueuePage /> },
         ],
       },
     ],

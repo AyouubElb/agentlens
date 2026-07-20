@@ -3,8 +3,11 @@ import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import { apiKeyGuard } from "../../shared/middleware/apiKeyGuard.js";
 import { authGuard } from "../../shared/middleware/authGuard.js";
 import {
+  globalRunPageSchema,
+  globalRunsQuery,
   ingestAckSchema,
   ingestRunSchema,
+  queueFacetsSchema,
   runDetailSchema,
   runIdParam,
   scoredRunSchema,
@@ -31,6 +34,20 @@ export function runsIngestRoutes(app: FastifyInstance): void {
 export function runsDashboardRoutes(app: FastifyInstance): void {
   const r = app.withTypeProvider<ZodTypeProvider>();
   r.addHook("preHandler", authGuard);
+
+  // The cross-agent scoring queue — all of the caller's runs, filterable + paginated.
+  r.get(
+    "/",
+    { schema: { querystring: globalRunsQuery, response: { 200: globalRunPageSchema } } },
+    async (req) => {
+      return service.listRuns(req.user.sub, req.query);
+    },
+  );
+
+  // Registered before "/:id" so "facets" isn't matched as a run id.
+  r.get("/facets", { schema: { response: { 200: queueFacetsSchema } } }, async (req) => {
+    return service.getFacets(req.user.sub);
+  });
 
   r.get("/:id", { schema: { params: runIdParam, response: { 200: runDetailSchema } } }, async (req) => {
     return service.getRun(req.params.id, req.user.sub);

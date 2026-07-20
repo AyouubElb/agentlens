@@ -8,6 +8,8 @@ import type {
   RunStatus,
 } from "../../generated/prisma/client.js";
 import { prisma } from "../../db/client.js";
+import type { PageParams } from "../../shared/pagination/pagination.js";
+import { skipTake } from "../../shared/pagination/pagination.js";
 import type {
   CreateAgentInput,
   CreateCriterionInput,
@@ -19,8 +21,16 @@ import type {
 export type RubricWithCriteria = Rubric & { criteria: Criterion[] };
 export type AgentWithRubric = Agent & { rubric: RubricWithCriteria };
 
-export function listAgents(userId: string): Promise<Agent[]> {
-  return prisma.agent.findMany({ where: { userId }, orderBy: { createdAt: "desc" } });
+export async function listAgents(
+  userId: string,
+  page: PageParams,
+): Promise<{ items: Agent[]; total: number }> {
+  const where = { userId };
+  const [items, total] = await Promise.all([
+    prisma.agent.findMany({ where, orderBy: { createdAt: "desc" }, ...skipTake(page) }),
+    prisma.agent.count({ where }),
+  ]);
+  return { items, total };
 }
 
 export function findAgent(id: string, userId: string): Promise<Agent | null> {
@@ -133,11 +143,17 @@ export async function createKey(
   return prisma.apiKey.create({ data: { ...data, agentId } });
 }
 
-export function listKeys(agentId: string, userId: string): Promise<ApiKey[]> {
-  return prisma.apiKey.findMany({
-    where: { agentId, agent: { userId } },
-    orderBy: { createdAt: "desc" },
-  });
+export async function listKeys(
+  agentId: string,
+  userId: string,
+  page: PageParams,
+): Promise<{ items: ApiKey[]; total: number }> {
+  const where = { agentId, agent: { userId } };
+  const [items, total] = await Promise.all([
+    prisma.apiKey.findMany({ where, orderBy: { createdAt: "desc" }, ...skipTake(page) }),
+    prisma.apiKey.count({ where }),
+  ]);
+  return { items, total };
 }
 
 export async function revokeKey(kid: string, agentId: string, userId: string): Promise<boolean> {
@@ -150,16 +166,23 @@ export async function revokeKey(kid: string, agentId: string, userId: string): P
 
 export type RunWithLabel = Run & { agentVersion: Pick<AgentVersion, "label"> };
 
-export function listRuns(
+export async function listRuns(
   agentId: string,
   userId: string,
+  page: PageParams,
   status?: RunStatus,
-): Promise<RunWithLabel[]> {
-  return prisma.run.findMany({
-    where: { agentVersion: { agentId, agent: { userId } }, ...(status ? { status } : {}) },
-    include: { agentVersion: { select: { label: true } } },
-    orderBy: { createdAt: "desc" },
-  }) as Promise<RunWithLabel[]>;
+): Promise<{ items: RunWithLabel[]; total: number }> {
+  const where = { agentVersion: { agentId, agent: { userId } }, ...(status ? { status } : {}) };
+  const [items, total] = await Promise.all([
+    prisma.run.findMany({
+      where,
+      include: { agentVersion: { select: { label: true } } },
+      orderBy: { createdAt: "desc" },
+      ...skipTake(page),
+    }),
+    prisma.run.count({ where }),
+  ]);
+  return { items: items as RunWithLabel[], total };
 }
 
 export function listVersions(agentId: string, userId: string): Promise<AgentVersion[]> {

@@ -1,9 +1,10 @@
 import { apiClient } from "@/lib/api-client";
+import type { Paginated } from "@/lib/types/api";
 import type { Agent, AgentDetail, CreateAgentInput } from "./schemas";
 
 export const agentsApi = {
-  list: async (): Promise<Agent[]> => {
-    const { data } = await apiClient.get<Agent[]>("/agents");
+  list: async (page: number): Promise<Paginated<Agent>> => {
+    const { data } = await apiClient.get<Paginated<Agent>>("/agents", { params: { page } });
     return data;
   },
 

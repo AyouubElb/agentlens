@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { pageQuery, paginated } from "../../shared/pagination/pagination.js";
 
 // context/metadata are opaque JSON — AgentLens stores and displays them, never interprets them.
 export const ingestRunSchema = z.object({
@@ -59,8 +60,39 @@ export const scoredRunSchema = z.object({
 
 export const runIdParam = z.object({ id: z.string() });
 
+// The cross-agent scoring queue: a run list item carrying its agent's identity for the "Agent" column.
+export const globalRunListItemSchema = z.object({
+  id: z.string(),
+  agentId: z.string(),
+  agentName: z.string(),
+  versionLabel: z.string(),
+  input: z.string(),
+  status: statusSchema,
+  overallScore: z.number().nullable(),
+  createdAt: z.date(),
+});
+
+// The queue is an unscored worklist by default; callers may still request scored explicitly.
+export const globalRunsQuery = pageQuery.extend({
+  status: statusSchema.optional(),
+  agentId: z.string().optional(),
+  agentName: z.string().optional(),
+  versionLabel: z.string().optional(),
+  sort: z.enum(["oldest", "newest"]).default("newest"),
+});
+export const globalRunPageSchema = paginated(globalRunListItemSchema);
+
+// Dropdown options for the scoring-queue filter bar.
+export const queueFacetsSchema = z.object({
+  agents: z.array(z.object({ id: z.string(), name: z.string() })),
+  versions: z.array(z.string()),
+});
+
 export type IngestRunInput = z.infer<typeof ingestRunSchema>;
 export type IngestAck = z.infer<typeof ingestAckSchema>;
 export type RunDetail = z.infer<typeof runDetailSchema>;
 export type SubmitScoresInput = z.infer<typeof submitScoresSchema>;
 export type ScoredRun = z.infer<typeof scoredRunSchema>;
+export type GlobalRunsQuery = z.infer<typeof globalRunsQuery>;
+export type GlobalRunListItem = z.infer<typeof globalRunListItemSchema>;
+export type QueueFacets = z.infer<typeof queueFacetsSchema>;

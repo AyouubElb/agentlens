@@ -78,7 +78,7 @@ describe("api keys", () => {
     const token = await authCookie("1");
     const agentId = await newAgent(token);
     await issueKey(token, agentId);
-    const item = (await as(token, "GET", `${AGENTS}/${agentId}/keys`)).json()[0];
+    const item = (await as(token, "GET", `${AGENTS}/${agentId}/keys`)).json().items[0];
     expect(item).not.toHaveProperty("key");
     expect(item).not.toHaveProperty("keyHash");
   });
@@ -90,9 +90,10 @@ describe("api keys", () => {
     await issueKey(token, agentId, "two");
     await issueKey(token, agentId, "three");
     const list = (await as(token, "GET", `${AGENTS}/${agentId}/keys`)).json();
-    expect(list).toHaveLength(3);
-    expect(list.every((k: { status: string }) => k.status === "active")).toBe(true);
-    expect(list[0].name).toBe("three");
+    expect(list.items).toHaveLength(3);
+    expect(list.total).toBe(3);
+    expect(list.items.every((k: { status: string }) => k.status === "active")).toBe(true);
+    expect(list.items[0].name).toBe("three");
   });
 
   test("revoke → 200; key then shows revoked status + revokedAt", async () => {
@@ -100,7 +101,7 @@ describe("api keys", () => {
     const agentId = await newAgent(token);
     const kid = (await issueKey(token, agentId)).json().id;
     expect((await as(token, "DELETE", `${AGENTS}/${agentId}/keys/${kid}`)).statusCode).toBe(200);
-    const item = (await as(token, "GET", `${AGENTS}/${agentId}/keys`)).json()[0];
+    const item = (await as(token, "GET", `${AGENTS}/${agentId}/keys`)).json().items[0];
     expect(item.status).toBe("revoked");
     expect(item.revokedAt).not.toBeNull();
   });
@@ -124,7 +125,7 @@ describe("api keys", () => {
     expect((await as(b, "DELETE", `${AGENTS}/${agentId}/keys/${kid}`)).statusCode).toBe(404);
 
     // A's key is untouched by B's attempts.
-    expect((await as(a, "GET", `${AGENTS}/${agentId}/keys`)).json()[0].status).toBe("active");
+    expect((await as(a, "GET", `${AGENTS}/${agentId}/keys`)).json().items[0].status).toBe("active");
   });
 
   test("unauthenticated → 401", async () => {
