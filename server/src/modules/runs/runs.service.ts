@@ -1,7 +1,17 @@
 import type { Prisma } from "../../generated/prisma/client.js";
 import { NotFoundError, ValidationError } from "../../shared/errors/errors.js";
-import type { IngestAck, IngestRunInput, RunDetail, ScoredRun, SubmitScoresInput } from "./runs.schema.js";
-import type { RunWithRubricAndScores } from "./runs.repo.js";
+import type { Page } from "../../shared/pagination/pagination.js";
+import type {
+  GlobalRunListItem,
+  GlobalRunsQuery,
+  IngestAck,
+  IngestRunInput,
+  QueueFacets,
+  RunDetail,
+  ScoredRun,
+  SubmitScoresInput,
+} from "./runs.schema.js";
+import type { RunWithAgent, RunWithRubricAndScores } from "./runs.repo.js";
 import { weightedOverall } from "./rollup.js";
 import * as repo from "./runs.repo.js";
 
@@ -40,6 +50,37 @@ export async function ingestRun(agentId: string, input: IngestRunInput): Promise
     metadata: input.metadata as Prisma.InputJsonValue | undefined,
   });
   return { id: run.id, status: run.status, createdAt: run.createdAt };
+}
+
+function toGlobalRunListItem(run: RunWithAgent): GlobalRunListItem {
+  return {
+    id: run.id,
+    agentId: run.agentVersion.agent.id,
+    agentName: run.agentVersion.agent.name,
+    versionLabel: run.agentVersion.label,
+    input: run.input,
+    status: run.status,
+    overallScore: run.overallScore,
+    createdAt: run.createdAt,
+  };
+}
+
+export async function listRuns(
+  userId: string,
+  query: GlobalRunsQuery,
+): Promise<Page<GlobalRunListItem>> {
+  const { page, limit, status, agentId, agentName, versionLabel, sort } = query;
+  // The queue is an unscored worklist unless the caller asks otherwise.
+  const { items, total } = await repo.listRunsForUser(
+    userId,
+    { page, limit },
+    { status: status ?? "unscored", agentId, agentName, versionLabel, sort },
+  );
+  return { items: items.map(toGlobalRunListItem), page, limit, total };
+}
+
+export function getFacets(userId: string): Promise<QueueFacets> {
+  return repo.queueFacets(userId);
 }
 
 export async function getRun(runId: string, userId: string): Promise<RunDetail> {

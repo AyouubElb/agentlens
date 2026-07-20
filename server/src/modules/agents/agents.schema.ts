@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { pageQuery, paginated } from "../../shared/pagination/pagination.js";
 
 const nameSchema = z.string().min(3).max(100);
 
@@ -31,7 +32,9 @@ export const criterionParam = z.object({ id: z.string(), cid: z.string() });
 export const keyParam = z.object({ id: z.string(), kid: z.string() });
 export const versionLabelParam = z.object({ id: z.string(), label: z.string() });
 
-export const runsQuery = z.object({ status: z.enum(["unscored", "scored"]).optional() });
+export const listAgentsQuery = pageQuery;
+export const listKeysQuery = pageQuery;
+export const runsQuery = pageQuery.extend({ status: z.enum(["unscored", "scored"]).optional() });
 
 export const agentSchema = z.object({
   id: z.string(),
@@ -83,6 +86,10 @@ export const runListItemSchema = z.object({
 });
 
 export const okSchema = z.object({ ok: z.boolean() });
+
+export const agentPageSchema = paginated(agentSchema);
+export const apiKeyPageSchema = paginated(apiKeySchema);
+export const runListPageSchema = paginated(runListItemSchema);
 
 export type CreateAgentInput = z.infer<typeof createAgentSchema>;
 export type UpdateAgentInput = z.infer<typeof updateAgentSchema>;

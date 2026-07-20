@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { agentKeys } from "@/lib/constants/query-keys";
 import { toast } from "@/components/ui/toast";
 import { ApiError } from "@/lib/api-client";
@@ -8,10 +8,11 @@ function message(error: unknown, fallback: string) {
   return error instanceof ApiError ? error.message : fallback;
 }
 
-export function useAgents() {
+export function useAgents(page: number) {
   return useQuery({
-    queryKey: agentKeys.list(),
-    queryFn: agentsApi.list,
+    queryKey: agentKeys.list(page),
+    queryFn: () => agentsApi.list(page),
+    placeholderData: keepPreviousData,
   });
 }
 

@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
+import { Pager } from "@/components/ui/Pager";
 import { Alert, Skeleton } from "@/components/ui/feedback";
 import { useAgents } from "@/features/agents/useAgents";
 import { AgentCard } from "@/features/agents/AgentCard";
@@ -16,11 +17,13 @@ function countLabel(n: number) {
 const grid = "grid gap-4 sm:grid-cols-2 lg:grid-cols-3";
 
 export function AgentsPage() {
-  const { data: agents, isPending, isError } = useAgents();
+  const [page, setPage] = useState(1);
+  const { data, isPending, isError } = useAgents(page);
   const [createOpen, setCreateOpen] = useState(false);
   const closeCreate = useCallback(() => setCreateOpen(false), []);
 
-  const isEmpty = agents?.length === 0;
+  const agents = data?.items;
+  const isEmpty = data?.total === 0;
 
   return (
     <div className="mx-auto flex min-h-full max-w-content flex-col p-8">
@@ -28,7 +31,7 @@ export function AgentsPage() {
         <div>
           <h1 className="text-[24px] font-extrabold tracking-[-0.01em]">Agents</h1>
           <p className="mt-1 text-body text-text-muted">
-            {isPending ? "Loading…" : countLabel(agents?.length ?? 0)}
+            {isPending ? "Loading…" : countLabel(data?.total ?? 0)}
           </p>
         </div>
         {!isEmpty && (
@@ -50,11 +53,14 @@ export function AgentsPage() {
       ) : isEmpty ? (
         <AgentsEmptyState onCreate={() => setCreateOpen(true)} />
       ) : (
-        <div className={grid}>
-          {agents.map((agent) => (
-            <AgentCard key={agent.id} agent={agent} />
-          ))}
-        </div>
+        <>
+          <div className={grid}>
+            {agents?.map((agent) => (
+              <AgentCard key={agent.id} agent={agent} />
+            ))}
+          </div>
+          {data && <Pager page={data.page} limit={data.limit} total={data.total} onPageChange={setPage} />}
+        </>
       )}
 
       <Modal open={createOpen} onClose={closeCreate} title="New agent">

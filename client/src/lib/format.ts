@@ -28,3 +28,19 @@ export function formatRelativeTime(iso: string): string {
   }
   return "just now";
 }
+
+const STALE_AFTER_HOURS = 12;
+
+/** ISO string → terse elapsed time for the queue's "Waiting" column: "just now" / "2m" / "3h" / "5d". */
+export function formatWaiting(iso: string): string {
+  const seconds = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (seconds < 60) return "just now";
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
+  return `${Math.floor(seconds / 86400)}d`;
+}
+
+/** A run that has waited long enough to flag (amber) in the queue. */
+export function isStale(iso: string): boolean {
+  return Date.now() - new Date(iso).getTime() >= STALE_AFTER_HOURS * 3600 * 1000;
+}

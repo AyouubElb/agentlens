@@ -190,7 +190,10 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    page?: number;
+                    limit?: number;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -204,11 +207,16 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            name: string;
-                            /** Format: date-time */
-                            createdAt: string;
-                        }[];
+                            items: {
+                                id: string;
+                                name: string;
+                                /** Format: date-time */
+                                createdAt: string;
+                            }[];
+                            page: number;
+                            limit: number;
+                            total: number;
+                        };
                     };
                 };
             };
@@ -592,7 +600,10 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    page?: number;
+                    limit?: number;
+                };
                 header?: never;
                 path: {
                     id: string;
@@ -608,18 +619,23 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            name: string;
-                            prefix: string;
-                            /** Format: date-time */
-                            createdAt: string;
-                            /** Format: date-time */
-                            revokedAt: string | null;
-                            /** Format: date-time */
-                            lastUsedAt: string | null;
-                            /** @enum {string} */
-                            status: "active" | "revoked";
-                        }[];
+                            items: {
+                                id: string;
+                                name: string;
+                                prefix: string;
+                                /** Format: date-time */
+                                createdAt: string;
+                                /** Format: date-time */
+                                revokedAt: string | null;
+                                /** Format: date-time */
+                                lastUsedAt: string | null;
+                                /** @enum {string} */
+                                status: "active" | "revoked";
+                            }[];
+                            page: number;
+                            limit: number;
+                            total: number;
+                        };
                     };
                 };
             };
@@ -722,6 +738,8 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
+                    page?: number;
+                    limit?: number;
                     status?: "unscored" | "scored";
                 };
                 header?: never;
@@ -739,15 +757,20 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            id: string;
-                            versionLabel: string;
-                            input: string;
-                            /** @enum {string} */
-                            status: "unscored" | "scored";
-                            overallScore: number | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        }[];
+                            items: {
+                                id: string;
+                                versionLabel: string;
+                                input: string;
+                                /** @enum {string} */
+                                status: "unscored" | "scored";
+                                overallScore: number | null;
+                                /** Format: date-time */
+                                createdAt: string;
+                            }[];
+                            page: number;
+                            limit: number;
+                            total: number;
+                        };
                     };
                 };
             };
@@ -890,6 +913,106 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/runs/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    limit?: number;
+                    status?: "unscored" | "scored";
+                    agentId?: string;
+                    agentName?: string;
+                    versionLabel?: string;
+                    sort?: "oldest" | "newest";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            items: {
+                                id: string;
+                                agentId: string;
+                                agentName: string;
+                                versionLabel: string;
+                                input: string;
+                                /** @enum {string} */
+                                status: "unscored" | "scored";
+                                overallScore: number | null;
+                                /** Format: date-time */
+                                createdAt: string;
+                            }[];
+                            page: number;
+                            limit: number;
+                            total: number;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/runs/facets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            agents: {
+                                id: string;
+                                name: string;
+                            }[];
+                            versions: string[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;

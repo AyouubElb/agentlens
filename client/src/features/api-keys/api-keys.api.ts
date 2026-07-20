@@ -1,9 +1,12 @@
 import { apiClient } from "@/lib/api-client";
+import type { Paginated } from "@/lib/types/api";
 import type { ApiKey, CreatedApiKey, IssueKeyInput } from "./schemas";
 
 export const apiKeysApi = {
-  list: async (agentId: string): Promise<ApiKey[]> => {
-    const { data } = await apiClient.get<ApiKey[]>(`/agents/${agentId}/keys`);
+  list: async (agentId: string, page: number): Promise<Paginated<ApiKey>> => {
+    const { data } = await apiClient.get<Paginated<ApiKey>>(`/agents/${agentId}/keys`, {
+      params: { page },
+    });
     return data;
   },
 

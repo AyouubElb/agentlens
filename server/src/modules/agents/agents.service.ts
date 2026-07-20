@@ -19,6 +19,7 @@ import type {
   UpdateRubricInput,
 } from "./agents.schema.js";
 import type { AgentWithRubric, RubricWithCriteria, RunWithLabel } from "./agents.repo.js";
+import type { Page, PageParams } from "../../shared/pagination/pagination.js";
 import * as repo from "./agents.repo.js";
 
 function toAgent(a: Agent): PublicAgent {
@@ -50,8 +51,9 @@ function toApiKey(k: ApiKey): PublicApiKey {
   };
 }
 
-export async function list(userId: string): Promise<PublicAgent[]> {
-  return (await repo.listAgents(userId)).map(toAgent);
+export async function list(userId: string, page: PageParams): Promise<Page<PublicAgent>> {
+  const { items, total } = await repo.listAgents(userId, page);
+  return { items: items.map(toAgent), page: page.page, limit: page.limit, total };
 }
 
 export async function create(userId: string, input: CreateAgentInput): Promise<PublicAgentDetail> {
@@ -132,9 +134,14 @@ export async function issueKey(
   return { ...toApiKey(key), key: plaintext };
 }
 
-export async function listKeys(agentId: string, userId: string): Promise<PublicApiKey[]> {
+export async function listKeys(
+  agentId: string,
+  userId: string,
+  page: PageParams,
+): Promise<Page<PublicApiKey>> {
   if (!(await repo.findAgent(agentId, userId))) throw new NotFoundError("Agent not found");
-  return (await repo.listKeys(agentId, userId)).map(toApiKey);
+  const { items, total } = await repo.listKeys(agentId, userId, page);
+  return { items: items.map(toApiKey), page: page.page, limit: page.limit, total };
 }
 
 export async function revokeKey(kid: string, agentId: string, userId: string): Promise<void> {
@@ -162,9 +169,11 @@ export async function listRuns(
   agentId: string,
   userId: string,
   query: RunsQuery,
-): Promise<PublicRunListItem[]> {
+): Promise<Page<PublicRunListItem>> {
   if (!(await repo.findAgent(agentId, userId))) throw new NotFoundError("Agent not found");
-  return (await repo.listRuns(agentId, userId, query.status)).map(toRunListItem);
+  const { page, limit, status } = query;
+  const { items, total } = await repo.listRuns(agentId, userId, { page, limit }, status);
+  return { items: items.map(toRunListItem), page, limit, total };
 }
 
 export async function listVersions(agentId: string, userId: string): Promise<PublicVersion[]> {

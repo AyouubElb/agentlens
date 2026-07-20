@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Alert, Skeleton } from "@/components/ui/feedback";
+import { Pager } from "@/components/ui/Pager";
 import { ScoreChip } from "@/components/ui/ScoreChip";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Table, type Column } from "@/components/ui/Table";
@@ -55,8 +56,15 @@ const columns: Column<RunListItem>[] = [
 
 export function RunsPanel({ agentId }: { agentId: string }) {
   const [status, setStatus] = useState<RunStatus | undefined>(undefined);
-  const { data: runs, isPending, isError } = useRuns(agentId, status);
+  const [page, setPage] = useState(1);
+  const { data, isPending, isError } = useRuns(agentId, status, page);
   const navigate = useNavigate();
+
+  // Changing the filter resets to the first page — page 3 of "all" rarely maps to page 3 of "unscored".
+  const changeStatus = (value: RunStatus | undefined) => {
+    setStatus(value);
+    setPage(1);
+  };
 
   return (
     <TableCard
@@ -68,7 +76,7 @@ export function RunsPanel({ agentId }: { agentId: string }) {
             <button
               key={f.label}
               type="button"
-              onClick={() => setStatus(f.value)}
+              onClick={() => changeStatus(f.value)}
               className={cn(
                 "rounded-sm px-3 py-1 text-label font-semibold transition-colors",
                 status === f.value ? "bg-raised text-text" : "text-text-muted hover:text-text",
@@ -91,13 +99,20 @@ export function RunsPanel({ agentId }: { agentId: string }) {
           ))}
         </div>
       ) : (
-        <Table
-          columns={columns}
-          rows={runs}
-          rowKey={(r) => r.id}
-          onRowClick={(r) => navigate(`/runs/${r.id}`)}
-          empty="No runs yet. Once this agent pushes runs, they'll appear here."
-        />
+        <>
+          <Table
+            columns={columns}
+            rows={data.items}
+            rowKey={(r) => r.id}
+            onRowClick={(r) => navigate(`/runs/${r.id}`)}
+            empty="No runs yet. Once this agent pushes runs, they'll appear here."
+          />
+          {data.total > data.limit && (
+            <div className="border-t border-hairline px-5 py-3">
+              <Pager page={data.page} limit={data.limit} total={data.total} onPageChange={setPage} />
+            </div>
+          )}
+        </>
       )}
     </TableCard>
   );
