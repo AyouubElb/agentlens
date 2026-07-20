@@ -26,8 +26,8 @@ export function AgentsPage() {
   const isEmpty = data?.total === 0;
 
   return (
-    <div className="mx-auto flex min-h-full max-w-content flex-col p-8">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="mx-auto flex min-h-full max-w-content flex-col p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-[24px] font-extrabold tracking-[-0.01em]">Agents</h1>
           <p className="mt-1 text-body text-text-muted">

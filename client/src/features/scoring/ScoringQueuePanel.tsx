@@ -108,14 +108,14 @@ export function ScoringQueuePanel() {
       title="Runs to score"
       subtitle="Runs waiting for a human score, across every agent."
       action={
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 rounded-md border border-hairline bg-surface px-2.5">
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+          <div className="flex flex-1 items-center gap-2 rounded-md border border-hairline bg-surface px-2.5 sm:flex-none">
             <Search size={15} className="text-text-faint" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by agent…"
-              className="w-44 bg-transparent py-2 text-[13px] text-text placeholder:text-text-faint focus:outline-none"
+              className="w-full bg-transparent py-2 text-[13px] text-text placeholder:text-text-faint focus:outline-none sm:w-44"
             />
           </div>
           <Select label="Agent" value={agentId} options={agentOptions} onChange={onAgent} />
