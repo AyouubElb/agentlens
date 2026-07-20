@@ -266,12 +266,29 @@
                           "createdAt": {
                             "type": "string",
                             "format": "date-time"
+                          },
+                          "runs": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "unscored": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "avgScore": {
+                            "nullable": true,
+                            "type": "number"
                           }
                         },
                         "required": [
                           "id",
                           "name",
-                          "createdAt"
+                          "createdAt",
+                          "runs",
+                          "unscored",
+                          "avgScore"
                         ],
                         "additionalProperties": false
                       }
@@ -1719,6 +1736,100 @@
                   "required": [
                     "agents",
                     "versions"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/runs/overview": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "agents": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "totalRuns": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "unscored": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "avgScore": {
+                      "nullable": true,
+                      "type": "number"
+                    },
+                    "recentRuns": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "agentId": {
+                            "type": "string"
+                          },
+                          "agentName": {
+                            "type": "string"
+                          },
+                          "versionLabel": {
+                            "type": "string"
+                          },
+                          "input": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "unscored",
+                              "scored"
+                            ]
+                          },
+                          "overallScore": {
+                            "nullable": true,
+                            "type": "number"
+                          },
+                          "createdAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "agentId",
+                          "agentName",
+                          "versionLabel",
+                          "input",
+                          "status",
+                          "overallScore",
+                          "createdAt"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "agents",
+                    "totalRuns",
+                    "unscored",
+                    "avgScore",
+                    "recentRuns"
                   ],
                   "additionalProperties": false
                 }

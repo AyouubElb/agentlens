@@ -4,13 +4,6 @@ import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/cn";
 import type { Agent } from "./schemas";
 
-// Metrics aren't in GET /agents yet (see CLAUDE.md TODO); undefined renders as "—".
-interface AgentMetrics {
-  runs?: number;
-  unscored?: number;
-  avgScore?: number | null;
-}
-
 function Stat({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1">
@@ -22,10 +15,8 @@ function Stat({ label, children }: { label: string; children: React.ReactNode })
   );
 }
 
-const dash = <span className="text-text-faint">—</span>;
-
-export function AgentCard({ agent, metrics = {} }: { agent: Agent; metrics?: AgentMetrics }) {
-  const { runs, unscored, avgScore } = metrics;
+export function AgentCard({ agent }: { agent: Agent }) {
+  const { runs, unscored, avgScore } = agent;
 
   return (
     <Link
@@ -40,11 +31,9 @@ export function AgentCard({ agent, metrics = {} }: { agent: Agent; metrics?: Age
       <div className="flex-1" />
 
       <div className="mt-3 flex items-end gap-6 border-t border-hairline pt-4">
-        <Stat label="runs">{runs ?? dash}</Stat>
+        <Stat label="runs">{runs}</Stat>
         <Stat label="unscored">
-          {unscored == null ? (
-            dash
-          ) : unscored > 0 ? (
+          {unscored > 0 ? (
             <span className="inline-flex rounded-sm border border-warning/40 bg-warning-tint px-2 py-px text-[13px] font-bold text-warning-text">
               {unscored}
             </span>
@@ -53,7 +42,7 @@ export function AgentCard({ agent, metrics = {} }: { agent: Agent; metrics?: Age
           )}
         </Stat>
         <Stat label="avg">
-          {avgScore === undefined ? dash : <ScoreChip score={avgScore} size="md" />}
+          <ScoreChip score={avgScore} size="md" />
         </Stat>
       </div>
 

@@ -379,6 +379,71 @@ describe("scoring-queue facets (GET /api/v1/runs/facets)", () => {
   });
 });
 
+describe("dashboard overview (GET /api/v1/runs/overview)", () => {
+  test("counts agents/runs/unscored, averages scored, lists ≤5 recent cross-agent runs", async () => {
+    const { token, runId, cids } = await setupScoringRun("a");
+    const a2 = (await as(token, "POST", AGENTS, { ...validAgent, name: "Second" })).json().id;
+    const k2 = (await as(token, "POST", `${AGENTS}/${a2}/keys`, { name: "prod" })).json().key;
+    await ingest(k2, { ...validRun, input: "from second agent" });
+    await as(token, "POST", `/api/v1/runs/${runId}/scores`, {
+      scores: [{ criterionId: cids[0], value: 4 }, { criterionId: cids[1], value: 5 }],
+    });
+
+    const ov = (await as(token, "GET", `${INGEST}/overview`)).json();
+    expect(ov.agents).toBe(2);
+    expect(ov.totalRuns).toBe(2);
+    expect(ov.unscored).toBe(1);
+    expect(ov.avgScore).toBeCloseTo(13 / 3); // only the one scored run
+    expect(ov.recentRuns).toHaveLength(2);
+    expect(ov.recentRuns[0].input).toBe("from second agent"); // newest first
+    expect(ov.recentRuns[0].agentName).toBe("Second");
+  });
+
+  test("caps recent runs at 5", async () => {
+    const { token, key } = await setupAgent("a");
+    for (let i = 0; i < 7; i++) await ingest(key, { ...validRun, input: `run ${i}` });
+    const ov = (await as(token, "GET", `${INGEST}/overview`)).json();
+    expect(ov.totalRuns).toBe(7);
+    expect(ov.recentRuns).toHaveLength(5);
+  });
+
+  test("empty account → zeros, null average, no recent runs", async () => {
+    const token = await authCookie("a");
+    const ov = (await as(token, "GET", `${INGEST}/overview`)).json();
+    expect(ov).toMatchObject({ agents: 0, totalRuns: 0, unscored: 0, avgScore: null, recentRuns: [] });
+  });
+
+  test("tenant-isolated; unauthenticated → 401", async () => {
+    const { key } = await setupAgent("a");
+    await ingest(key, validRun);
+    const other = await authCookie("b");
+    expect((await as(other, "GET", `${INGEST}/overview`)).json().totalRuns).toBe(0);
+    expect((await app.inject({ method: "GET", url: `${INGEST}/overview` })).statusCode).toBe(401);
+  });
+});
+
+describe("agent list stats (GET /api/v1/agents)", () => {
+  test("each card carries its own runs/unscored/avg; tenant-scoped", async () => {
+    const { token, agentId, runId, cids } = await setupScoringRun("a");
+    const key = (await as(token, "POST", `${AGENTS}/${agentId}/keys`, { name: "second" })).json().key;
+    await ingest(key, { ...validRun, input: "second run" }); // a 2nd unscored run on the same agent
+    await as(token, "POST", `/api/v1/runs/${runId}/scores`, {
+      scores: [{ criterionId: cids[0], value: 4 }, { criterionId: cids[1], value: 5 }],
+    });
+
+    const card = (await as(token, "GET", AGENTS)).json().items.find((a: { id: string }) => a.id === agentId);
+    expect(card).toMatchObject({ runs: 2, unscored: 1 });
+    expect(card.avgScore).toBeCloseTo(13 / 3);
+  });
+
+  test("agent with no runs → runs 0, unscored 0, avg null", async () => {
+    const token = await authCookie("a");
+    await as(token, "POST", AGENTS, validAgent);
+    const card = (await as(token, "GET", AGENTS)).json().items[0];
+    expect(card).toMatchObject({ runs: 0, unscored: 0, avgScore: null });
+  });
+});
+
 describe("agent runs & versions reads", () => {
   test("list runs, filter by status, list/get versions; tenant-isolated", async () => {
     const { token, agentId, key } = await setupAgent("a");

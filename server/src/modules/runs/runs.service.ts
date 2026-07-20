@@ -6,6 +6,7 @@ import type {
   GlobalRunsQuery,
   IngestAck,
   IngestRunInput,
+  Overview,
   QueueFacets,
   RunDetail,
   ScoredRun,
@@ -81,6 +82,17 @@ export async function listRuns(
 
 export function getFacets(userId: string): Promise<QueueFacets> {
   return repo.queueFacets(userId);
+}
+
+export async function getOverview(userId: string): Promise<Overview> {
+  const s = await repo.overviewStats(userId);
+  return {
+    agents: s.agents,
+    totalRuns: s.totalRuns,
+    unscored: s.unscored,
+    avgScore: s.avgScore,
+    recentRuns: s.recentRuns.map(toGlobalRunListItem),
+  };
 }
 
 export async function getRun(runId: string, userId: string): Promise<RunDetail> {

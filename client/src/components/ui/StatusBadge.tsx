@@ -4,7 +4,7 @@ type Tone = "success" | "muted";
 
 const tones: Record<Tone, { pill: string; dot: string }> = {
   success: {
-    pill: "bg-success-tint border-success/40 text-success-text",
+    pill: "bg-success-tint border-success text-success-text",
     dot: "bg-success-text",
   },
   muted: {

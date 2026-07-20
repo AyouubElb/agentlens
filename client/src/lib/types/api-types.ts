@@ -212,6 +212,9 @@ export interface paths {
                                 name: string;
                                 /** Format: date-time */
                                 createdAt: string;
+                                runs: number;
+                                unscored: number;
+                                avgScore: number | null;
                             }[];
                             page: number;
                             limit: number;
@@ -1006,6 +1009,58 @@ export interface paths {
                                 name: string;
                             }[];
                             versions: string[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/runs/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            agents: number;
+                            totalRuns: number;
+                            unscored: number;
+                            avgScore: number | null;
+                            recentRuns: {
+                                id: string;
+                                agentId: string;
+                                agentName: string;
+                                versionLabel: string;
+                                input: string;
+                                /** @enum {string} */
+                                status: "unscored" | "scored";
+                                overallScore: number | null;
+                                /** Format: date-time */
+                                createdAt: string;
+                            }[];
                         };
                     };
                 };

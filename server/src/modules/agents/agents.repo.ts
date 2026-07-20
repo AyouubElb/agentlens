@@ -33,6 +33,50 @@ export async function listAgents(
   return { items, total };
 }
 
+export interface AgentRunStats {
+  runs: number;
+  unscored: number;
+  sumScore: number;
+  scoredCount: number;
+}
+
+// One snapshot: version→agent map + run aggregates grouped by version, so a concurrent ingest can't skew the fold.
+export async function runStatsForAgents(agentIds: string[]): Promise<Map<string, AgentRunStats>> {
+  const stats = new Map<string, AgentRunStats>(
+    agentIds.map((id) => [id, { runs: 0, unscored: 0, sumScore: 0, scoredCount: 0 }]),
+  );
+  if (agentIds.length === 0) return stats;
+
+  const [versions, grouped] = await prisma.$transaction([
+    prisma.agentVersion.findMany({
+      where: { agentId: { in: agentIds } },
+      select: { id: true, agentId: true },
+    }),
+    prisma.run.groupBy({
+      by: ["agentVersionId", "status"],
+      where: { agentVersion: { agentId: { in: agentIds } } },
+      _count: { _all: true },
+      _sum: { overallScore: true },
+    }),
+  ]);
+
+  const agentByVersion = new Map(versions.map((v) => [v.id, v.agentId]));
+  for (const g of grouped) {
+    const agentId = agentByVersion.get(g.agentVersionId);
+    const s = agentId ? stats.get(agentId) : undefined;
+    if (!s) continue;
+    const count = g._count._all;
+    s.runs += count;
+    if (g.status === "unscored") {
+      s.unscored += count;
+    } else {
+      s.scoredCount += count;
+      s.sumScore += g._sum.overallScore ?? 0;
+    }
+  }
+  return stats;
+}
+
 export function findAgent(id: string, userId: string): Promise<Agent | null> {
   return prisma.agent.findFirst({ where: { id, userId } });
 }

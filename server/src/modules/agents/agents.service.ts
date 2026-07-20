@@ -8,6 +8,7 @@ import type {
   CreatedApiKey,
   PublicAgent,
   PublicAgentDetail,
+  PublicAgentListItem,
   PublicApiKey,
   PublicCriterion,
   PublicRubric,
@@ -18,12 +19,21 @@ import type {
   UpdateCriterionInput,
   UpdateRubricInput,
 } from "./agents.schema.js";
-import type { AgentWithRubric, RubricWithCriteria, RunWithLabel } from "./agents.repo.js";
+import type { AgentRunStats, AgentWithRubric, RubricWithCriteria, RunWithLabel } from "./agents.repo.js";
 import type { Page, PageParams } from "../../shared/pagination/pagination.js";
 import * as repo from "./agents.repo.js";
 
 function toAgent(a: Agent): PublicAgent {
   return { id: a.id, name: a.name, createdAt: a.createdAt };
+}
+
+// Weighted over the agent's scored runs (sum/count), never an average of per-version averages.
+export function foldAvgScore(stats: AgentRunStats): number | null {
+  return stats.scoredCount > 0 ? stats.sumScore / stats.scoredCount : null;
+}
+
+function toAgentListItem(a: Agent, stats: AgentRunStats): PublicAgentListItem {
+  return { ...toAgent(a), runs: stats.runs, unscored: stats.unscored, avgScore: foldAvgScore(stats) };
 }
 
 function toCriterion(c: Criterion): PublicCriterion {
@@ -51,9 +61,12 @@ function toApiKey(k: ApiKey): PublicApiKey {
   };
 }
 
-export async function list(userId: string, page: PageParams): Promise<Page<PublicAgent>> {
+export async function list(userId: string, page: PageParams): Promise<Page<PublicAgentListItem>> {
   const { items, total } = await repo.listAgents(userId, page);
-  return { items: items.map(toAgent), page: page.page, limit: page.limit, total };
+  const stats = await repo.runStatsForAgents(items.map((a) => a.id));
+  const empty: AgentRunStats = { runs: 0, unscored: 0, sumScore: 0, scoredCount: 0 };
+  const listItems = items.map((a) => toAgentListItem(a, stats.get(a.id) ?? empty));
+  return { items: listItems, page: page.page, limit: page.limit, total };
 }
 
 export async function create(userId: string, input: CreateAgentInput): Promise<PublicAgentDetail> {

@@ -7,6 +7,7 @@ import {
   globalRunsQuery,
   ingestAckSchema,
   ingestRunSchema,
+  overviewSchema,
   queueFacetsSchema,
   runDetailSchema,
   runIdParam,
@@ -44,9 +45,13 @@ export function runsDashboardRoutes(app: FastifyInstance): void {
     },
   );
 
-  // Registered before "/:id" so "facets" isn't matched as a run id.
+  // Registered before "/:id" so "facets"/"overview" aren't matched as a run id.
   r.get("/facets", { schema: { response: { 200: queueFacetsSchema } } }, async (req) => {
     return service.getFacets(req.user.sub);
+  });
+
+  r.get("/overview", { schema: { response: { 200: overviewSchema } } }, async (req) => {
+    return service.getOverview(req.user.sub);
   });
 
   r.get("/:id", { schema: { params: runIdParam, response: { 200: runDetailSchema } } }, async (req) => {

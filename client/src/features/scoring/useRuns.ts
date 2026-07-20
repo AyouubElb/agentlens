@@ -32,6 +32,13 @@ export function useQueueFacets() {
   });
 }
 
+export function useOverview() {
+  return useQuery({
+    queryKey: runKeys.overview(),
+    queryFn: scoringApi.getOverview,
+  });
+}
+
 export function useRun(id: string) {
   return useQuery({
     queryKey: runKeys.detail(id),
