@@ -1,6 +1,14 @@
 import { apiClient } from "@/lib/api-client";
 import type { GlobalRunListItem, Paginated } from "@/lib/types/api";
-import type { QueueFacets, QueueParams, RunListItem, RunStatus } from "./schemas";
+import type {
+  QueueFacets,
+  QueueParams,
+  RunDetail,
+  RunListItem,
+  RunStatus,
+  ScoredRun,
+  SubmitScoresBody,
+} from "./schemas";
 
 export const scoringApi = {
   listRuns: async (
@@ -36,6 +44,16 @@ export const scoringApi = {
 
   getFacets: async (): Promise<QueueFacets> => {
     const { data } = await apiClient.get<QueueFacets>("/runs/facets");
+    return data;
+  },
+
+  getRun: async (id: string): Promise<RunDetail> => {
+    const { data } = await apiClient.get<RunDetail>(`/runs/${id}`);
+    return data;
+  },
+
+  submitScores: async (id: string, body: SubmitScoresBody): Promise<ScoredRun> => {
+    const { data } = await apiClient.post<ScoredRun>(`/runs/${id}/scores`, body);
     return data;
   },
 };

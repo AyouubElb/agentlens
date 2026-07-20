@@ -9,6 +9,19 @@ export function formatDate(iso: string): string {
   return dateFmt.format(new Date(iso));
 }
 
+const dateTimeFmt = new Intl.DateTimeFormat("en-GB", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+/** ISO string → "12 Jun 2026, 09:12". */
+export function formatDateTime(iso: string): string {
+  return dateTimeFmt.format(new Date(iso));
+}
+
 const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
 const units: [Intl.RelativeTimeFormatUnit, number][] = [
   ["year", 31536000],

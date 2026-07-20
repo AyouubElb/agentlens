@@ -1,4 +1,10 @@
-import { useId, type InputHTMLAttributes, type LabelHTMLAttributes, type ReactNode } from "react";
+import {
+  useId,
+  type InputHTMLAttributes,
+  type LabelHTMLAttributes,
+  type ReactNode,
+  type TextareaHTMLAttributes,
+} from "react";
 import type { FieldError } from "react-hook-form";
 import { cn } from "@/lib/cn";
 
@@ -51,6 +57,45 @@ export function Input({ label, help, error, mono, className, id, ...props }: Inp
           "h-[38px] w-full rounded-md border bg-input px-2.5 text-[13px] text-text",
           "placeholder:text-text-faint focus:outline-none",
           mono && "font-mono",
+          error
+            ? "border-danger shadow-ring-danger"
+            : "border-border-input focus:border-accent focus:shadow-ring-accent",
+          "disabled:cursor-not-allowed disabled:opacity-45",
+          className,
+        )}
+        {...props}
+      />
+      {message && (
+        <FieldHelp id={messageId} tone={error ? "danger" : "muted"}>
+          {message}
+        </FieldHelp>
+      )}
+    </div>
+  );
+}
+
+interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+  label?: string;
+  help?: ReactNode;
+  error?: FieldError;
+}
+
+export function Textarea({ label, help, error, className, id, ...props }: TextareaProps) {
+  const autoId = useId();
+  const areaId = id ?? autoId;
+  const message = error?.message ?? help;
+  const messageId = message ? `${areaId}-help` : undefined;
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      {label && <Label htmlFor={areaId}>{label}</Label>}
+      <textarea
+        id={areaId}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={messageId}
+        className={cn(
+          "w-full resize-y rounded-md border bg-input px-2.5 py-2 text-[13px] leading-relaxed text-text",
+          "placeholder:text-text-faint focus:outline-none",
           error
             ? "border-danger shadow-ring-danger"
             : "border-border-input focus:border-accent focus:shadow-ring-accent",
